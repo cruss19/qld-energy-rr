@@ -32,10 +32,13 @@ def test_pairplot_feature_names_and_ticks_are_diagonal() -> None:
         def set_horizontalalignment(self, value):
             self.horizontalalignment = value
 
+        def set_verticalalignment(self, value):
+            self.verticalalignment = value
+
         def set_rotation_mode(self, value):
             self.rotation_mode = value
 
-    class XAxis:
+    class AxisSide:
         def __init__(self):
             self.label = Label()
             self.labelpad = 0
@@ -45,12 +48,20 @@ def test_pairplot_feature_names_and_ticks_are_diagonal() -> None:
 
     class Axis:
         def __init__(self):
-            self.xaxis = XAxis()
-            self.tick_rotation = None
+            self.xaxis = AxisSide()
+            self.yaxis = AxisSide()
+            self.tick_rotations = {}
+            self.x_tick_labels = [Label(), Label()]
+            self.y_tick_labels = [Label(), Label()]
 
         def tick_params(self, *, axis, labelrotation):
-            assert axis == "x"
-            self.tick_rotation = labelrotation
+            self.tick_rotations[axis] = labelrotation
+
+        def get_xticklabels(self):
+            return self.x_tick_labels
+
+        def get_yticklabels(self):
+            return self.y_tick_labels
 
     axes = np.asarray([[Axis(), Axis()]])
 
@@ -66,4 +77,15 @@ def test_pairplot_feature_names_and_ticks_are_diagonal() -> None:
         assert axis.xaxis.label.horizontalalignment == "right"
         assert axis.xaxis.label.rotation_mode == "anchor"
         assert axis.xaxis.labelpad == 10
-        assert axis.tick_rotation == PAIRPLOT_FEATURE_LABEL_ANGLE
+        assert axis.yaxis.label.rotation == PAIRPLOT_FEATURE_LABEL_ANGLE
+        assert axis.yaxis.label.horizontalalignment == "right"
+        assert axis.yaxis.label.verticalalignment == "bottom"
+        assert axis.yaxis.label.rotation_mode == "anchor"
+        assert axis.yaxis.labelpad == 12
+        assert axis.tick_rotations == {
+            "x": PAIRPLOT_FEATURE_LABEL_ANGLE,
+            "y": PAIRPLOT_FEATURE_LABEL_ANGLE,
+        }
+        for label in [*axis.x_tick_labels, *axis.y_tick_labels]:
+            assert label.horizontalalignment == "right"
+            assert label.rotation_mode == "anchor"

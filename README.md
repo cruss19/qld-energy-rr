@@ -271,9 +271,10 @@ training windows where appropriate, and one final hold-out year.
 | Final gate | 1 January–31 December 2020 |
 | Model selection | Validation data inside the development period only |
 | Transform fitting | Training partition only |
-| Checkpoint selection | Minimum validation objective under the verified run rule |
+| Development checkpoint selection | Minimum validation objective within each development fold |
+| Final refit state | Fixed epoch determined from the median development best epoch, frozen before 2020 scoring |
 | Replication | Seeds 42, 142, and 242 where the final experiment contract requires three seeds |
-| Ensemble | Prediction-level combination of the official best checkpoint from each verified member |
+| Ensemble | Equal-weight prediction-level combination of the three frozen final member states |
 | Final reporting | Aggregate plus horizon-level point and probabilistic metrics |
 
 The 2020 result is retained as a fixed chronological benchmark reconstructed
