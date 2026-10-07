@@ -101,6 +101,9 @@ tmp/**
 !outputs/10_final_2020_evaluation/*.csv
 !outputs/10_final_2020_evaluation/*.png
 
+!outputs/11_extension_modelling/
+!outputs/11_extension_modelling/*.csv
+
 !outputs/model_artifacts/
 !outputs/model_artifacts/TCN_starNLL_2020_seed_42_onnx_manifest.json
 !outputs/model_artifacts/TCN_starNLL_2020_seed_42.onnx

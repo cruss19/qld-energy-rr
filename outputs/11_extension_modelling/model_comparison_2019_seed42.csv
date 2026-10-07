@@ -1,0 +1,5 @@
+rank_by_mae,model,comparison_role,train_period,validation_year,seed,best_epoch,validation_nll,validation_mae_mw,validation_rmse_mw
+1,TCN_starNLL_causal_feature_estimates_no_sd,extension without SD channels,2015-2018,2019,42,10,0.7349993985174708,38.09069964265906,49.97286632408849
+2,TCN_starNLL_causal_feature_estimates,extension with SD channels,2015-2018,2019,42,11,0.7362934529882276,38.20318176319177,50.16464435761593
+3,TCN_starNLL_direct_radiation,previous non-extension champion,2015-2018,2019,42,7,0.7375509840650464,38.287193954699745,50.30056878819094
+4,AEMO P5MIN external benchmark,external point-forecast benchmark,not applicable,2019,not applicable,not applicable,not available,47.11900242278944,61.31468601409256
