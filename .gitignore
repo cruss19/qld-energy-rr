@@ -84,8 +84,8 @@ tmp/**
 
 # Reviewed publication evidence
 !outputs/04_development_eda/
-!outputs/04_development_eda/weekday_duck_belly_profiles_2016_2017_2019_2020.csv
-!outputs/04_development_eda/weekday_duck_belly_2016_2017_2019_2020.png
+!outputs/04_development_eda/weekday_duck_belly_profiles_2017_2019.csv
+!outputs/04_development_eda/weekday_duck_belly_2017_2019.png
 
 !outputs/06_tcn_development/
 !outputs/06_tcn_development/*.csv
