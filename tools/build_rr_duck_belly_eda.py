@@ -1,4 +1,4 @@
-"""Build the RR 2017-versus-2019 weekday seasonal demand-profile figure."""
+"""Build the RR four-year weekday seasonal demand-profile figure."""
 
 from __future__ import annotations
 
@@ -15,16 +15,21 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "data/processed/rr_demand_calendar_base_5min_2015_2020.parquet"
 OUTPUT = ROOT / "outputs/04_development_eda"
-PROFILE_PATH = OUTPUT / "weekday_duck_belly_profiles_2017_2019.csv"
-FIGURE_PATH = OUTPUT / "weekday_duck_belly_2017_2019.png"
-YEARS = (2017, 2019)
+PROFILE_PATH = OUTPUT / "weekday_duck_belly_profiles_2016_2017_2019_2020.csv"
+FIGURE_PATH = OUTPUT / "weekday_duck_belly_2016_2017_2019_2020.png"
+YEARS = (2016, 2017, 2019, 2020)
 SEASONS = ("Summer", "Winter")
 PALETTE = {
+    (2016, "Summer"): "#E69F00",
+    (2016, "Winter"): "#56B4E9",
     (2017, "Summer"): "#D1492E",
     (2017, "Winter"): "#21618C",
     (2019, "Summer"): "#9B4A9A",
     (2019, "Winter"): "#168765",
+    (2020, "Summer"): "#8C2D04",
+    (2020, "Winter"): "#264653",
 }
+LINESTYLES = {2016: ":", 2017: "-", 2019: "--", 2020: "-."}
 
 
 def season_window(year: int, season: str) -> tuple[pd.Timestamp, pd.Timestamp, str]:
@@ -87,11 +92,11 @@ def save_figure(profiles: pd.DataFrame) -> None:
                 part["mean_operational_demand_mw"],
                 color=PALETTE[(year, season)],
                 linewidth=2.3,
-                linestyle="-" if year == 2017 else "--",
+                linestyle=LINESTYLES[year],
                 label=f"{year} {season.lower()} ({part['season_dates'].iloc[0]})",
             )
     ax.set(
-        title="Queensland average weekday duck-belly profiles: 2017 vs 2019",
+        title="Queensland average weekday duck-belly profiles: 2016, 2017, 2019 and 2020",
         xlabel="Time of day (AEST)",
         ylabel="Mean operational demand (MW)",
         xlim=(0, 24),
