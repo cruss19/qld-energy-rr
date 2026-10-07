@@ -9,7 +9,10 @@ from src.tcn_star_nll_extension_data import (
     build_demand_helpers,
     build_radiation_helpers,
 )
-from src.tcn_star_nll_extension_model import TCNStarNLLCausalFeatureEstimates
+from src.tcn_star_nll_extension_model import (
+    TCNStarNLLCausalFeatureEstimates,
+    TCNStarNLLCausalFeatureEstimatesNoSD,
+)
 
 
 def _demand_source() -> pd.DataFrame:
@@ -111,3 +114,29 @@ def test_extension_model_tensor_contract_and_output():
     )
     assert [tuple(value.shape) for value in output] == [(2, 6), (2, 6), (2, 6)]
     assert model.receptive_field_steps == 1009
+
+
+def test_no_sd_extension_contract_uses_estimates_without_sd_channels():
+    length = 505
+    arrays = {
+        "demand": torch.zeros(length, 7),
+        "demand_terminal_estimated": torch.arange(length, dtype=torch.float32) + 1000,
+        "system": torch.zeros(length, 16),
+        "climate": torch.zeros(length, 2),
+        "regional": torch.zeros(length, 5, 11),
+        "radiation_terminal_estimated": torch.arange(length * 5, dtype=torch.float32).reshape(length, 5),
+        "calendar": torch.zeros(length, 4),
+        "population": torch.zeros(length, 1),
+        "targets": torch.zeros(length, 6),
+    }
+    sample = ExtensionDataset(arrays, np.array([504]))[0]
+    assert sample[0].shape == (7, 505)
+    assert sample[3].shape == (5, 11, 505)
+    assert sample[0][0, -1] == 1504
+    assert torch.equal(sample[3][:, 10, -1], arrays["radiation_terminal_estimated"][504])
+
+    model = TCNStarNLLCausalFeatureEstimatesNoSD(calendar_dim=4)
+    output = model(*(value.unsqueeze(0) for value in sample[:6]))
+    assert [tuple(value.shape) for value in output] == [(1, 6), (1, 6), (1, 6)]
+    assert model.DEMAND_CHANNELS == 7
+    assert model.REGIONAL_FEATURES == 11

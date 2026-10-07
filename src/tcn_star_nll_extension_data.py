@@ -227,7 +227,13 @@ def _calendar(frame: pd.DataFrame, fit: np.ndarray):
     return np.concatenate(blocks, axis=1), state
 
 
-def prepare_fold(frame: pd.DataFrame, train_start: pd.Timestamp, train_end: pd.Timestamp):
+def prepare_fold(
+    frame: pd.DataFrame,
+    train_start: pd.Timestamp,
+    train_end: pd.Timestamp,
+    *,
+    include_sd_channels: bool = True,
+):
     """Fit every transformation on the training fold and construct tensors."""
     fit = np.asarray((frame.index >= train_start) & (frame.index < train_end))
     if not fit.any():
@@ -241,7 +247,11 @@ def prepare_fold(frame: pd.DataFrame, train_start: pd.Timestamp, train_end: pd.T
     demand_sd = (
         frame["demand_estimated_sd"].to_numpy(np.float32) / demand_scale
     ).astype(np.float32)
-    demand = np.column_stack([demand_base, demand_sd]).astype(np.float32)
+    demand = (
+        np.column_stack([demand_base, demand_sd])
+        if include_sd_channels
+        else demand_base
+    ).astype(np.float32)
 
     system, system_state = _standardize(frame, SYSTEM_FEATURES, fit)
     climate, climate_state = _standardize(frame, CLIMATE_FEATURES, fit)
@@ -258,9 +268,10 @@ def prepare_fold(frame: pd.DataFrame, train_start: pd.Timestamp, train_end: pd.T
     radiation_actual = np.clip((radiation_actual - minimum) / span, 0.0, 1.0)
     radiation_estimated = np.clip((radiation_estimated - minimum) / span, 0.0, 1.0)
     radiation_sd = radiation_sd / span
-    regional = np.concatenate(
-        [regional_base, radiation_actual[:, :, None], radiation_sd[:, :, None]], axis=2
-    ).astype(np.float32)
+    regional_parts = [regional_base, radiation_actual[:, :, None]]
+    if include_sd_channels:
+        regional_parts.append(radiation_sd[:, :, None])
+    regional = np.concatenate(regional_parts, axis=2).astype(np.float32)
 
     population, population_state = _standardize(frame, ("total_qld_population",), fit)
     target_fit = np.asarray(fit & (frame.index + pd.Timedelta(minutes=30) < train_end))
@@ -292,6 +303,8 @@ def prepare_fold(frame: pd.DataFrame, train_start: pd.Timestamp, train_end: pd.T
             "demand_sd_channel": "demand_estimated_sd aligned at every sequence timestamp",
             "radiation_terminal": "regional direct_radiation_estimated[t]",
             "radiation_sd_channel": "regional direct_radiation_estimated_sd aligned at every sequence timestamp",
+            "sd_helpers_calculated_upstream": True,
+            "sd_channels_in_model": include_sd_channels,
         },
         "demand": demand_state,
         "demand_estimated_scaling": "same mean and scale as totaldemand_mw",

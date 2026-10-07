@@ -139,6 +139,9 @@ def run_epoch(
 def fit_development(
     *, arrays, train_endpoints, validation_endpoints, scaler, run_dir: Path,
     seed: int, resume: bool = False,
+    model_class=TCNStarNLLCausalFeatureEstimates,
+    model_name: str = MODEL_NAME,
+    variant_name: str = VARIANT_NAME,
 ) -> dict:
     seed_everything(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -147,7 +150,7 @@ def fit_development(
         f"device_name={torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'}",
         flush=True,
     )
-    model = TCNStarNLLCausalFeatureEstimates(
+    model = model_class(
         calendar_dim=int(scaler["calendar_encoded_width"])
     ).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=0.0005, weight_decay=0.01)
@@ -158,7 +161,7 @@ def fit_development(
     train_loader = make_loader(arrays, train_endpoints, shuffle=True, workers=2)
     valid_loader = make_loader(arrays, validation_endpoints, shuffle=False, workers=1)
     identity = {
-        "model": MODEL_NAME, "variant": VARIANT_NAME, "stage": "development",
+        "model": model_name, "variant": variant_name, "stage": "development",
         "fold": "train_2015_2018_validate_2019", "seed": seed,
     }
     best_nll, best_epoch, bad_epochs, history, start_epoch = float("inf"), 0, 0, [], 1
@@ -228,7 +231,7 @@ def fit_development(
             "history": history,
         })
         print(
-            f"model={MODEL_NAME} seed={seed} epoch={epoch}/50 "
+            f"model={model_name} seed={seed} epoch={epoch}/50 "
             f"training_nll={train['nll']:.6f} training_mae_mw={train['mae_mw']:.3f} "
             f"validation_nll={valid['nll']:.6f} validation_mae_mw={valid['mae_mw']:.3f}",
             flush=True,
@@ -242,7 +245,7 @@ def fit_development(
         if epoch >= 8 and bad_epochs > 4:
             break
     result = {
-        "status": "complete", "model": MODEL_NAME, "variant": VARIANT_NAME,
+        "status": "complete", "model": model_name, "variant": variant_name,
         "fold": "train_2015_2018_validate_2019", "seed": seed,
         "best_epoch": best_epoch, "best_validation_nll": best_nll,
         "completed_epochs": len(history),

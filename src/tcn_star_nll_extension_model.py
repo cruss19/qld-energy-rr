@@ -61,4 +61,14 @@ class TCNStarNLLCausalFeatureEstimates(TCNStarNLL):
         return mu, scale, df
 
 
-__all__ = ["TCNStarNLLCausalFeatureEstimates"]
+class TCNStarNLLCausalFeatureEstimatesNoSD(TCNStarNLLCausalFeatureEstimates):
+    """Causal terminal estimates without estimate-SD input channels."""
+
+    DEMAND_CHANNELS = 7
+    REGIONAL_FEATURES = 11
+
+
+__all__ = [
+    "TCNStarNLLCausalFeatureEstimates",
+    "TCNStarNLLCausalFeatureEstimatesNoSD",
+]
