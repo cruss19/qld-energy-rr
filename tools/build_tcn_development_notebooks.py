@@ -1,8 +1,9 @@
-"""Reconstruct the missing RR TCN-development notebook layer from frozen artifacts.
+"""Maintainer-only reconstruction of TCN-development publication evidence.
 
 This utility is deliberately results-only.  It reads completed RR development
-runs, writes compact public evidence tables/figures, and creates explanatory
-notebooks.  It never imports a training loop, fits a model, or scores 2020.
+runs from undistributed local artifacts, writes compact public evidence
+tables/figures, and creates explanatory notebooks. It never imports a training
+loop, fits a model, or scores 2020, and it is not a clean-clone command.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ import nbformat as nbf
 import pandas as pd
 
 
-ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parent
+ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parents[1]
 RUNS = ROOT / "training_output" / "runs"
 OUT = ROOT / "outputs" / "06_tcn_development"
 NOTEBOOKS = ROOT / "notebooks"
@@ -445,25 +446,25 @@ def provenance_document() -> str:
 
 RR originally moved directly from reference models to the frozen ensemble comparison.  This reconstruction inserts the missing model-development layer without importing later-period results or rerunning a model.
 
-## Sources consulted
+## Historical evidence consulted
 
-| Source repository | Commit | Material reviewed | RR decision |
-|---|---|---|---|
-| `qld-demand-forecasting-dream` | `fb76fa6b57bbba4b7e94da013b271af28694dfaa` | `notebooks/06a_tcn_1.ipynb`, `06b_tcn_2.ipynb`, `06c_tcn_3.ipynb`, `06d_v6_tcn_results_analysis.ipynb`, `07_TCN_star.ipynb`, `08_TCN_starNLL.ipynb`; `src/v6/tcn_models.py`, `tcn_star.py`, `tcn_star_nll.py` | Architecture descriptions and the model-development/diagnostic structure were adapted. Numerical claims were replaced with RR's own completed 2017–2019 artifacts. |
-| `qld-demand-forecasting-final` | `f824b85012e4d3e5c2b732198cbdc8a28d9d52d7` | `notebooks/05_tcn_base_model_experiments.ipynb`, `06_tcn2_vs_ridge.ipynb`, `07_tcn_star.ipynb`, `08_tcn_starNLL - competing models.ipynb` | Used as an outline of the intended reader journey. Most cells were placeholders, so no numerical result was copied. |
-| `qld-demand-forecasting-reality` | `fb76fa6b57bbba4b7e94da013b271af28694dfaa` | `notebooks/06_tcn_modelling.ipynb`, `06a_six_channel_tcn.ipynb`, `06b_probabilistic_six_channel_tcn.ipynb` | General language about chronological evaluation and fair comparison was considered. Model code, later-year results, and the different six-channel lineage were rejected. |
+Historical source repositories and reconstruction artifacts were consulted
+read-only. The review was limited to architecture definitions, the intended
+model-development sequence, and presentation structure relevant to the RR's
+2015–2020 boundary. Private workspace names, commits and internal paths are not
+needed to establish the public result and are deliberately omitted.
 
 ## Accepted and adapted
 
-- The DREAM progression from consolidated TCN1, through branched TCN2 and shared-regional TCN3, to deep-lookback TCN_star and probabilistic TCN_starNLL.
-- Architecture explanations verified directly against the authoritative DREAM source modules and RR run identities.
+- The progression from consolidated TCN1, through branched TCN2 and shared-regional TCN3, to deep-lookback TCN_star and probabilistic TCN_starNLL.
+- Architecture explanations verified against preserved source evidence and RR run identities.
 - Results-analysis ideas limited to fold comparison, horizon profiles, convergence metadata, and an explicit decision boundary.
-- FINAL's intended separation between compact prototypes, TCN_star, and TCN_starNLL.
+- Separation between compact prototypes, TCN_star, and TCN_starNLL.
 
 ## Rejected or superseded
 
-- Every result after 2020, all 2021–2024 validation material, event/Callide studies, spike-threshold studies, weight-decay experiments, seven-step experiments, later LNN variants, and private feature research.
-- REALITY's later six-channel models because they are not the RR model lineage.
+- Material outside the RR's declared 2015–2020 public boundary.
+- Alternative model lineages that do not belong to the RR reconstruction.
 - Source-notebook outputs tied to historical local paths or different datasets.
 - Training-launch and optional execution cells; the RR notebooks are results-only.
 
@@ -473,7 +474,9 @@ RR originally moved directly from reference models to the frozen ensemble compar
 - Development tables generated from completed seed-42 folds for validation years 2017, 2018, and 2019.
 - Compact cross-model figures and explicit explanations of why objective values cannot be compared between MSE and NLL models.
 
-The frozen 2020 ensemble and final-evaluation artifacts are neither recomputed nor used to justify development choices.
+Only evidence relevant to the 2015–2020 RR boundary was retained. Numerical
+claims were checked against retained RR evidence, and no result outside that
+boundary entered the public reconstruction.
 """
 
 

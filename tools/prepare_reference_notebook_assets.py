@@ -1,8 +1,9 @@
-"""Prepare public, 2015--2020-only assets for the RR reference-model notebook.
+"""Maintainer-only preparation of reference-model publication assets.
 
 This utility is deliberately a migration/preparation tool, not a model trainer.
-It filters the authoritative historical feature frame and preserved reference
-results in memory before writing anything to the Resume Repository.
+It requires explicitly supplied, undistributed historical source artifacts and
+filters them to the 2015--2020 RR boundary before writing publication assets.
+It is not part of the public clean-clone execution path.
 """
 
 from __future__ import annotations
@@ -45,8 +46,8 @@ def main() -> int:
     if len(contract) != 55:
         raise RuntimeError(f"Expected 55 original Ridge features, found {len(contract)}")
 
-    # The private source contract labels the origin demand with a later event-
-    # study description. That event is outside the RR period. The numerical
+    # The historical source contract labels the origin demand with an out-of-scope
+    # event-study description. That event is outside the RR period. The numerical
     # series is unchanged; only the public metadata is made period-appropriate.
     demand_row = contract["canonical_feature_name"].eq("totaldemand_mw")
     contract.loc[demand_row, "required_transformation"] = (

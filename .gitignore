@@ -83,6 +83,10 @@ tmp/**
 *.gz
 
 # Reviewed publication evidence
+!outputs/03_feature_contract/
+outputs/03_feature_contract/*
+!outputs/03_feature_contract/public_parity_manifest.json
+
 !outputs/04_development_eda/
 !outputs/04_development_eda/weekday_duck_belly_profiles_2017_2019.csv
 !outputs/04_development_eda/weekday_duck_belly_2017_2019.png
@@ -108,3 +112,4 @@ tmp/**
 !outputs/model_artifacts/TCN_starNLL_2020_seed_42_onnx_manifest.json
 !outputs/model_artifacts/TCN_starNLL_2020_seed_42.onnx
 !outputs/model_artifacts/TCN_starNLL_architecture.png
+!outputs/model_artifacts/final_tcn_member_identities.csv

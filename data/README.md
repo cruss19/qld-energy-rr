@@ -3,6 +3,11 @@
 The RR rebuilds provider data locally. Complete third-party datasets are not
 committed to the public repository.
 
+Provider names, source identities, temporal limits, and acquisition routes are
+documented in [`THIRD_PARTY_DATA.md`](../THIRD_PARTY_DATA.md). The repository's
+MIT licence applies to original project code and documentation; it does not
+replace the terms or rights attached to third-party data.
+
 ## Directory contract
 
 | Directory | Contents | Git policy |
@@ -97,6 +102,16 @@ After registration, verification reports `not present locally`, `incomplete,
 unregistered, or contract mismatch`, or `registered and verified`. The complete
 acquisition gate passes only when every required source reports `registered and
 verified`.
+
+The clean-clone test suite excludes checks that require locally acquired source
+data:
+
+```powershell
+python -m pytest -m "not source_data" -q
+```
+
+After all registered provider data are present, run the complete local suite
+with `python -m pytest -q`.
 
 ## Validated preparation outputs
 

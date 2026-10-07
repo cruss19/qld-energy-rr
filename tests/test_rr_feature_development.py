@@ -5,7 +5,12 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from src.rr_feature_development import HORIZON_MINUTES, build_origin_frame
+from src.rr_feature_development import (
+    HORIZON_MINUTES,
+    build_origin_frame,
+    expanded_contract_rows,
+    load_feature_contract,
+)
 
 
 def _contract() -> dict:
@@ -46,3 +51,25 @@ def test_demandforecast_is_never_admitted() -> None:
     }
     assert "DEMANDFORECAST" not in admitted
     assert "DEMANDFORECAST" in contract["forbidden_model_inputs"]
+
+
+def test_expanded_contract_matches_authoritative_yaml() -> None:
+    root = Path(__file__).resolve().parents[1]
+    contract, digest = load_feature_contract(root / "config/public_feature_contract.yml")
+    expected = expanded_contract_rows(contract, digest).fillna("")
+    retained = pd.read_csv(
+        root / "data/contracts/rr_public_feature_contract_v1.csv",
+        keep_default_na=False,
+    )
+    pd.testing.assert_frame_equal(
+        retained.astype(str), expected.astype(str), check_dtype=False
+    )
+    assert retained["contract_sha256"].eq(digest).all()
+    assert not retained["route"].str.contains("flattened states", case=False).any()
+    ridge = yaml.safe_load(
+        (root / "config/experiments/reference_05_original_ridge.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert ridge["variant"] == "original_55_feature_30m"
+    assert ridge["major_parameters"]["base_predictors"] == 55

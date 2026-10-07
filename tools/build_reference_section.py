@@ -1,7 +1,7 @@
-"""Build the RR probabilistic-reference and final-comparison evidence.
+"""Maintainer-only builder for reference and final-comparison evidence.
 
-This is an evaluation/reporting utility. It consumes preserved predictions and
-does not fit or train any model.
+This evaluation/reporting utility requires undistributed preserved row-level
+predictions. It does not fit or train any model and is not a clean-clone path.
 """
 
 from __future__ import annotations

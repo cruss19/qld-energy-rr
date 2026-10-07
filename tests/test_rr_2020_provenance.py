@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from src.data_provenance import audit_manifest, load_yaml, source_inventory, validate_registry_policy
 
@@ -17,11 +18,13 @@ def test_registry_rejects_post_2020_sources() -> None:
     assert pd.Timestamp(REGISTRY["policy"]["latest_source_release"]) == pd.Timestamp("2020-12-31")
 
 
+@pytest.mark.source_data
 def test_every_declared_source_is_exactly_registered() -> None:
     inventory = source_inventory(ROOT, REGISTRY, MANIFEST)
     assert inventory["status"].eq("registered and verified").all(), inventory.to_string(index=False)
 
 
+@pytest.mark.source_data
 def test_manifest_has_no_post_2020_coverage() -> None:
     audit = audit_manifest(ROOT, MANIFEST)
     assert not audit.empty

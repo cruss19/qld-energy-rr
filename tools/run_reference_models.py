@@ -1,7 +1,8 @@
-"""Report the status of the preserved RR reference evidence.
+"""Maintainer-only status report for preserved RR reference evidence.
 
-The reference runs are historical and complete. This command validates and
-reports their artifacts; it deliberately does not fit or train models.
+The reference runs are historical and complete. This command requires
+undistributed row-level prediction artifacts, validates and reports them, and
+deliberately does not fit or train models. It is not a clean-clone command.
 """
 
 from __future__ import annotations

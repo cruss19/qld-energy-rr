@@ -1,7 +1,7 @@
 {
-  "source_repository": "qld-demand-forecasting-dream",
-  "source_relative_directory": "redundancy/pre_v6_workspace_20260905/outputs/probabilistic_reference_models",
-  "source_status": "uncommitted historical output archive",
+  "source_label": "historical reconstruction artifact",
+  "source_status": "preserved source evidence consulted read-only",
+  "source_scope": "probabilistic reference evidence relevant to the RR 2015-2020 boundary",
   "rr_action": "copied and filtered to the RR public evaluation boundary",
   "retained_evaluation_years": [
     2017,

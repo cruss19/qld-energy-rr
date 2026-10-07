@@ -8,7 +8,7 @@
 ![Forecasts](https://img.shields.io/badge/horizons-5%E2%80%9330%20minutes-6A5ACD)
 ![ONNX](https://img.shields.io/badge/ONNX-opset%2018-005CED)
 
-This repository is the public, reproducible portfolio edition of an end-to-end
+This repository is the public portfolio edition of an end-to-end
 machine-learning project for forecasting Queensland operational electricity
 demand. It demonstrates how I turned public energy-market, weather, calendar,
 population, and distributed-energy data into a chronologically evaluated
@@ -16,12 +16,17 @@ forecasting system, progressing from transparent baselines to deterministic
 and probabilistic Temporal Convolutional Networks (TCNs).
 
 The public study covers **2015–2020**. Development and model selection are
-restricted to **2015–2019**, and **2020 is reserved as the final unseen
-evaluation gate**. The public model lineage culminates in `TCN_starNLL`: a
+restricted to **2015–2019**. Because 2020 had been encountered during the
+broader historical project, it is reported here as a **held-out chronological
+RR benchmark reconstructed under a frozen protocol**, not as a previously
+unseen test set. The public model lineage culminates in `TCN_starNLL`: a
 long-context TCN with horizon-specific bounded Student-t distribution heads.
 
-> **Evidence status:** the bounded 2015–2020 feature frame reproduces all 96
-> columns of the frozen model frame exactly. The three final `TCN_starNLL`
+> **Evidence status:** historical maintainer verification found exact parity
+> for all 96 compared frozen-frame columns over 629,273 eligible origins; the
+> undistributed comparison cache is not available to a clean clone. The
+> sanitized [parity manifest](outputs/03_feature_contract/public_parity_manifest.json)
+> records that result. The three final `TCN_starNLL`
 > members, their equal-weight Student-t mixture ensemble, the fixed 2020
 > evaluation, the comparison notebook, and an opset-18 checked ONNX artifact
 > are complete. Later-year private-research results are not used here.
@@ -34,7 +39,7 @@ long-context TCN with horizon-specific bounded Student-t distribution heads.
 | Cadence | Five minutes |
 | Horizons | 5, 10, 15, 20, 25, and 30 minutes |
 | Development data | 2015–2019 only |
-| Final evaluation | One unseen 2020 gate |
+| Final evaluation | Held-out chronological 2020 RR benchmark under a frozen protocol |
 | Principal architecture | Multi-branch causal TCN with late context fusion |
 | Probabilistic output | Student-t location, scale, and degrees of freedom per horizon |
 | Main point metrics | MAE, RMSE, and signed bias in MW |
@@ -114,10 +119,10 @@ last network:
 | Comparable-history empirical model | Non-parametric change reference | Whether similar historical conditions contain useful local signal |
 | Ridge regression | Regularised linear benchmark | Value of the engineered information set without a deep network |
 | Gaussian, Student-t and empirical-residual linear references | Probabilistic endpoint benchmarks | Whether residual uncertainty is better represented by Gaussian, heavy-tailed or empirical distributions |
-| `TCN_1`–`TCN_3` | Controlled architecture development | Value of causal convolutions, branch structure, and temporal depth |
+| `TCN1`–`TCN3` | Controlled architecture development | Value of causal convolutions, branch structure, and temporal depth |
 | `TCN_star` | Long-context deterministic model | Value of a 42-hour input history and repeated dilation cycle |
 | `TCN_starNLL` | Probabilistic extension | Dynamic location, scale, and tail thickness at all six horizons |
-| Three-seed ensemble | Replication and variance reduction | Performance that is not dependent on one random initialization |
+| Three-seed ensemble | Replication and variance reduction | Reduces sensitivity to a single random initialization |
 
 Each retained comparison must use an explicitly recorded feature contract,
 chronological split, seed, training configuration, checkpoint rule, and scoring
@@ -218,9 +223,11 @@ admitted merely because they exist in one of the research repositories.
 | State of Queensland | Public-holiday and school-calendar information | Known-ahead calendar context | Original generation code is published; source terms remain applicable |
 | Queensland Government Statistician's Office | Historical annual Queensland population estimates | Statewide structural late-fusion context | Bounded source extract and provenance are retained |
 
-The repository will distribute acquisition and transformation code, sanitized
-manifests, schema contracts, checksums, and deliberately small licensed or
-synthetic fixtures—not an unreviewed copy of third-party research data.
+The repository contains acquisition and transformation code, sanitized
+manifests, schema contracts, checksums, and deliberately small derived or
+synthetic fixtures—not an unreviewed copy of third-party research data. See
+[`THIRD_PARTY_DATA.md`](THIRD_PARTY_DATA.md) for attribution and rights
+boundaries.
 
 ### AEMO record handling
 
@@ -269,9 +276,9 @@ training windows where appropriate, and one final hold-out year.
 | Ensemble | Prediction-level combination of the official best checkpoint from each verified member |
 | Final reporting | Aggregate plus horizon-level point and probabilistic metrics |
 
-The 2020 result is evaluated once after the public specification is frozen. If
-historical artifacts cannot prove that discipline, the result will be rebuilt
-from the public pipeline rather than relabelled.
+The 2020 result is retained as a fixed chronological benchmark reconstructed
+under a frozen protocol. Its outcomes are not used to modify the RR
+reconstruction.
 
 ## What this repository demonstrates
 
@@ -297,7 +304,7 @@ from the public pipeline rather than relabelled.
 
 - Windows 11, x86-64
 - Python 3.11.15
-- CPU reference build of PyTorch 2.13.0
+- CUDA-enabled Windows build of PyTorch 2.13.0 (`torch-2.13.0+cu130`)
 - ONNX opset 18
 
 The readable environment is defined in [`environment.yml`](environment.yml).
@@ -312,18 +319,32 @@ cd qld-energy-rr
 conda env create -f environment.yml
 conda activate qld-energy-rr
 python tools\verify_environment.py --expected-environment-name qld-energy-rr
-python -m pytest -q
+python -m pytest -m "not source_data" -q
 ```
 
 The verification utility checks package identity and imports, a Pandas/PyArrow
 Parquet round trip, a scikit-learn transformation, a PyTorch forward/backward
 pass, ONNX export and structural checking, TensorBoard event creation,
 headless plotting, and YAML parsing. The lockfile was also reconstructed in a
-disposable environment before acceptance.
+disposable environment before acceptance. The command above is the
+clean-clone-compatible suite. After the declared provider data have been
+acquired and registered locally, run `python -m pytest -q` for the complete
+suite, including source-data provenance checks.
 
-Other operating systems are not currently claimed as supported. A Windows
-GitHub Actions workflow is planned so that the public repository can recreate
-and test the environment independently of the author's workstation.
+Other operating systems are not currently claimed as supported. No hosted-CI
+claim is made; the exact Windows environment is defined by the committed lock.
+
+### Reproducibility boundaries
+
+- **Reconstructable:** acquisition, validation, feature construction, public
+  contracts, model source, and clean-clone unit/contract tests.
+- **Retained historical evidence:** small result tables, parity and run-identity
+  manifests, figures, and checked publication artifacts from completed runs.
+- **Not distributed:** raw provider archives, large checkpoints, row-level
+  predictions, and the frozen historical comparison cache.
+
+The command boundary and retained maintainer-only utilities are listed in
+[`docs/maintainer_utilities.md`](docs/maintainer_utilities.md).
 
 ## Repository map
 
@@ -360,8 +381,9 @@ and test the environment independently of the author's workstation.
 
 The source comparison and reconstruction decisions are recorded in [`docs/notebook_reconstruction_provenance.md`](docs/notebook_reconstruction_provenance.md).
 
-Superseded comparison notebooks are retained under `notebooks/archive/` only
-as reconstruction history and are not part of the public reader journey.
+Superseded comparison notebooks are retained under
+[`notebooks/archive/`](notebooks/archive/README.md) only as reconstruction
+history and are not part of the public reader journey.
 
 ## Public evidence trail
 
@@ -375,15 +397,17 @@ The retained release evidence includes:
 6. model cards and a static architecture diagram;
 7. a checked ONNX model that can be inspected with
    [Netron](https://netron.app/);
-8. seed and best-checkpoint manifests;
-9. reproducible aggregate and horizon-level result tables;
+8. the sanitized
+   [final TCN member identity manifest](outputs/model_artifacts/final_tcn_member_identities.csv),
+   containing final seed and fixed-state identities without checkpoints or
+   row-level predictions;
+9. retained aggregate and horizon-level result tables;
 10. forecast-versus-observed and calibration figures; and
 11. a carefully qualified AEMO comparison.
 
 GitHub does not natively turn an ONNX file into an architecture diagram. The
-README will therefore show a static, reviewable rendering linked to a detailed
-architecture page; that page will link to the checked `.onnx` artifact for
-interactive inspection in Netron.
+README therefore links a static, reviewable rendering, the detailed model card,
+and the checked `.onnx` artifact for interactive inspection in Netron.
 
 ## Public/private boundary
 
@@ -393,9 +417,8 @@ research workspace.
 
 Excluded from this public repository are:
 
-- post-2020 experimental results and event-specific redesigns;
-- later model families, private ablations, and proprietary feature research;
-- locked future-test data or results;
+- material outside the declared 2015–2020 public research boundary;
+- unrelated historical research branches and internal workspace material;
 - deployment and commercial product engineering;
 - machine-specific paths, credentials, caches, and raw provider archives; and
 - artifacts whose provenance, licensing, or experiment identity is not yet
@@ -432,7 +455,7 @@ privacy, and reproducibility review.
 | Environment verification tool | Complete |
 | Public data contracts and source manifests | Complete for the published 2015–2020 workflow |
 | Curated source-code migration | Complete for the published model lineage |
-| Public feature contract | Exact 96-column parity verified |
+| Public feature contract | Current YAML expanded to 91 declared feature rows; historical exact parity verified for all 96 compared frozen-frame columns and recorded in a sanitized manifest |
 | 2020 reference reconstruction | Five original and three probabilistic 30-minute references complete; AEMO retained as a six-horizon external benchmark |
 | 2020 `TCN_starNLL` three-seed ensemble | Complete |
 | ONNX model and architecture rendering | Complete; opset-18 full checker passed |
@@ -442,6 +465,3 @@ privacy, and reproducibility review.
 
 Developed by **cruss19** as an independent applied machine-learning and energy
 forecasting project.
-
-Professional résumé, LinkedIn, and contact links will be added before the
-repository is published.

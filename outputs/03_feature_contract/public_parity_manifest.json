@@ -1,0 +1,20 @@
+{
+  "verification_status": "PASS",
+  "verification_scope": "Historical maintainer verification against an undistributed frozen reconstruction cache; not independently rerunnable from a clean clone.",
+  "verification_date": "2026-10-07",
+  "authoritative_contract_id": "rr_public_feature_contract_v1",
+  "authoritative_contract_sha256": "3583c8cd388d75aaa74f43c7741574dd0266f69bffc230e86fd4c0d9ac8ec99c",
+  "public_frame_rows": 629273,
+  "public_frame_columns_including_key": 99,
+  "eligible_origin_count": 629273,
+  "compared_columns": 96,
+  "mismatched_columns": 0,
+  "expected_terminal_rows_excluded_for_incomplete_targets": 6,
+  "public_only_columns_not_part_of_historical_comparison": [
+    "callide_c_status",
+    "eligible_common"
+  ],
+  "public_frame_sha256": "372241e9c9275b8081be9093be77e855e4817f95a694956661aecf557586efb3",
+  "frozen_comparison_artifact_sha256": "221edde3789257a6017c126298ef2e23ca7d6f830d89d3fc3eb2095cac711040",
+  "frozen_comparison_artifact_distributed": false
+}

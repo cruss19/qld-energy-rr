@@ -18,14 +18,19 @@ grid-control decisions.
 
 - Study period: 2015–2020.
 - Development and model selection: 2015–2019 only.
-- Final fixed evaluation: 2020.
+- Final fixed evaluation: held-out chronological 2020 RR benchmark reconstructed
+  under a frozen protocol; it is not described as previously unseen because the
+  year had been encountered in the broader historical project.
 - Final refit: 2015–2019 for seven epochs, selected as the median official
   development best epoch before observing 2020 results.
 - Target: `TOTALDEMAND(t+h) - TOTALDEMAND(t)` for six five-minute horizons.
 - Transformations are fitted on training-fold data only.
-- The public feature frame reproduces all 96 frozen feature/target columns over
-  629,273 eligible origins. Six terminal 2020 timestamps are excluded because
-  a complete 30-minute future target cannot exist.
+- Historical maintainer verification found exact parity for all 96 compared
+  frozen-frame columns over 629,273 eligible origins. The frozen comparison
+  cache is deliberately not distributed; the sanitized result is retained in
+  `outputs/03_feature_contract/public_parity_manifest.json`. Six terminal 2020
+  timestamps are excluded because a complete 30-minute future target cannot
+  exist.
 
 ## Inputs and architecture
 

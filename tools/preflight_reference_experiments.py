@@ -1,4 +1,8 @@
-"""Validate the reconciled RR reference contracts and preserved evidence."""
+"""Maintainer-only validation of reference contracts and preserved evidence.
+
+This utility requires undistributed processed data and row-level historical
+prediction artifacts. It is not part of the public clean-clone execution path.
+"""
 
 from __future__ import annotations
 
