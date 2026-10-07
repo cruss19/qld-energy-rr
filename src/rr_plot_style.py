@@ -41,13 +41,28 @@ def rotate_pairplot_feature_labels(
     grid,
     angle: float = PAIRPLOT_FEATURE_LABEL_ANGLE,
 ) -> None:
-    """Rotate PairGrid x-axis feature names and tick labels diagonally."""
+    """Rotate PairGrid feature names and tick labels diagonally on both axes."""
     for axis in grid.axes.flat:
         if axis is None:
             continue
-        label = axis.xaxis.get_label()
-        label.set_rotation(angle)
-        label.set_horizontalalignment("right")
-        label.set_rotation_mode("anchor")
+        x_label = axis.xaxis.get_label()
+        x_label.set_rotation(angle)
+        x_label.set_horizontalalignment("right")
+        x_label.set_rotation_mode("anchor")
         axis.xaxis.labelpad = 10
+
+        y_label = axis.yaxis.get_label()
+        y_label.set_rotation(angle)
+        y_label.set_horizontalalignment("right")
+        y_label.set_verticalalignment("bottom")
+        y_label.set_rotation_mode("anchor")
+        axis.yaxis.labelpad = 12
+
         axis.tick_params(axis="x", labelrotation=angle)
+        axis.tick_params(axis="y", labelrotation=angle)
+        for tick_label in axis.get_xticklabels():
+            tick_label.set_horizontalalignment("right")
+            tick_label.set_rotation_mode("anchor")
+        for tick_label in axis.get_yticklabels():
+            tick_label.set_horizontalalignment("right")
+            tick_label.set_rotation_mode("anchor")
