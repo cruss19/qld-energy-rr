@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 import matplotlib
 
@@ -13,6 +14,12 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from src.rr_plot_style import apply_rr_plot_style
+
+
+RR_COLORS = apply_rr_plot_style()
 SOURCE = ROOT / "data/processed/rr_demand_calendar_base_5min_2015_2020.parquet"
 OUTPUT = ROOT / "outputs/04_development_eda"
 PROFILE_PATH = OUTPUT / "weekday_duck_belly_profiles_2017_2019.csv"
@@ -20,10 +27,10 @@ FIGURE_PATH = OUTPUT / "weekday_duck_belly_2017_2019.png"
 YEARS = (2017, 2019)
 SEASONS = ("Summer", "Winter")
 PALETTE = {
-    (2017, "Summer"): "#D1492E",
-    (2017, "Winter"): "#21618C",
-    (2019, "Summer"): "#9B4A9A",
-    (2019, "Winter"): "#168765",
+    (2017, "Summer"): RR_COLORS[0],
+    (2017, "Winter"): RR_COLORS[3],
+    (2019, "Summer"): RR_COLORS[6],
+    (2019, "Winter"): RR_COLORS[9],
 }
 
 

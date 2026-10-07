@@ -346,6 +346,10 @@ claim is made; the exact Windows environment is defined by the committed lock.
 The command boundary and retained maintainer-only utilities are listed in
 [`docs/maintainer_utilities.md`](docs/maintainer_utilities.md).
 
+Project-authored Matplotlib figures use the shared 10-colour `plasma` cycle in
+[`src/rr_plot_style.py`](src/rr_plot_style.py). Pairplot feature names are
+rotated diagonally for legibility, together with their x-axis tick labels.
+
 ## Repository map
 
 | Location | Purpose |

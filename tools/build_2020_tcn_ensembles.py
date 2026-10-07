@@ -16,7 +16,11 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import sys
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import nbformat as nbf
 import numpy as np
@@ -26,6 +30,12 @@ from scipy.stats import t as student_t
 
 
 RR_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(RR_ROOT))
+
+from src.rr_plot_style import apply_rr_plot_style
+
+
+apply_rr_plot_style()
 RUNS = RR_ROOT / "training_output" / "runs"
 ENSEMBLES = RR_ROOT / "training_output" / "ensembles"
 OUTPUT = RR_ROOT / "outputs" / "09_tcn_ensemble_comparison"
@@ -396,6 +406,23 @@ def build_notebook(aggregate: pd.DataFrame, horizon: pd.DataFrame) -> None:
     NOTEBOOK.write_text(nbf.writes(notebook), encoding="utf-8")
 
 
+def render_ensemble_figure(horizon_table: pd.DataFrame) -> None:
+    """Render the public ensemble figure from its retained horizon table."""
+    apply_rr_plot_style()
+    fig, ax = plt.subplots(figsize=(10.5, 6.0))
+    for family in FAMILIES:
+        subset = horizon_table[horizon_table.model == family]
+        ax.plot(subset.horizon_minutes, subset.mae_mw, marker="o", linewidth=2, label=family)
+    ax.set_xlabel("Forecast horizon (minutes)")
+    ax.set_ylabel("MAE (MW)")
+    ax.set_title("Frozen 2020 three-seed ensemble MAE by horizon")
+    ax.grid(alpha=0.25)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(OUTPUT / "ensemble_mae_by_horizon_2020.png", dpi=180)
+    plt.close(fig)
+
+
 def main() -> int:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     ENSEMBLES.mkdir(parents=True, exist_ok=True)
@@ -440,18 +467,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    fig, ax = plt.subplots(figsize=(10.5, 6.0))
-    for family in FAMILIES:
-        subset = horizon_table[horizon_table.model == family]
-        ax.plot(subset.horizon_minutes, subset.mae_mw, marker="o", linewidth=2, label=family)
-    ax.set_xlabel("Forecast horizon (minutes)")
-    ax.set_ylabel("MAE (MW)")
-    ax.set_title("Frozen 2020 three-seed ensemble MAE by horizon")
-    ax.grid(alpha=0.25)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(OUTPUT / "ensemble_mae_by_horizon_2020.png", dpi=180)
-    plt.close(fig)
+    render_ensemble_figure(horizon_table)
 
     write_json(
         OUTPUT / "comparison_manifest.json",

@@ -13,12 +13,20 @@ import math
 import sys
 from pathlib import Path
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import nbformat as nbf
 import pandas as pd
 
 
 ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from src.rr_plot_style import apply_rr_plot_style
+
+
 RUNS = ROOT / "training_output" / "runs"
 OUT = ROOT / "outputs" / "06_tcn_development"
 NOTEBOOKS = ROOT / "notebooks"
@@ -188,6 +196,7 @@ def save_evidence(summary: pd.DataFrame, horizon: pd.DataFrame, epochs: pd.DataF
     fold_mean.to_csv(OUT / "development_model_summary.csv", index=False)
 
     plt.style.use("seaborn-v0_8-whitegrid")
+    apply_rr_plot_style()
     fig, ax = plt.subplots(figsize=(9.5, 5.5))
     for model in MODELS:
         part = summary[summary.model == model]

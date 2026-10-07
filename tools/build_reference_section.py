@@ -7,7 +7,11 @@ predictions. It does not fit or train any model and is not a clean-clone path.
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import nbformat as nbf
 import numpy as np
@@ -16,6 +20,12 @@ from scipy.stats import t as student_t
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from src.rr_plot_style import apply_rr_plot_style
+
+
+apply_rr_plot_style()
 HORIZONS = (5, 10, 15, 20, 25, 30)
 TCNS = ("TCN1", "TCN2", "TCN3", "TCN_star", "TCN_starNLL")
 AEMO = "aemo_p5min_external_benchmark"
@@ -232,6 +242,27 @@ def build_probabilistic_notebook() -> None:
     nbf.write(notebook, ROOT / "notebooks" / "05b_probabilistic_reference_models.ipynb")
 
 
+def render_comparison_figures(
+    six_horizons: pd.DataFrame,
+    endpoint: pd.DataFrame,
+    output_directory: Path,
+) -> None:
+    """Render public comparison figures from retained aggregate tables."""
+    apply_rr_plot_style()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for model, frame in six_horizons.groupby("model"):
+        ax.plot(frame["horizon_minutes"], frame["mae_mw"], marker="o", label=model)
+    ax.set(title="Frozen 2020 six-horizon comparison", xlabel="Horizon (minutes)", ylabel="MAE (MW)")
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+    fig.tight_layout(); fig.savefig(output_directory / "six_horizon_mae_2020.png", dpi=160); plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ordered = endpoint.sort_values("mae_30m_mw", ascending=True)
+    ax.barh(ordered["model"], ordered["mae_30m_mw"])
+    ax.set(title="Frozen 2020 30-minute endpoint comparison", xlabel="MAE (MW)", ylabel="")
+    fig.tight_layout(); fig.savefig(output_directory / "endpoint_30m_mae_2020.png", dpi=160); plt.close(fig)
+
+
 def main() -> None:
     build_probabilistic_notebook()
     out = ROOT / "outputs" / "10_final_2020_evaluation"
@@ -282,18 +313,7 @@ def main() -> None:
         [{"model": model, "native_2020_origins": count, "common_2020_origins": len(endpoint_common)} for model, count in native_counts.items()]
     ).to_csv(out / "common_sample_counts_2020.csv", index=False)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for model, frame in six_horizons.groupby("model"):
-        ax.plot(frame["horizon_minutes"], frame["mae_mw"], marker="o", label=model)
-    ax.set(title="Frozen 2020 six-horizon comparison", xlabel="Horizon (minutes)", ylabel="MAE (MW)")
-    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
-    fig.tight_layout(); fig.savefig(out / "six_horizon_mae_2020.png", dpi=160); plt.close(fig)
-
-    fig, ax = plt.subplots(figsize=(10, 7))
-    ordered = endpoint.sort_values("mae_30m_mw", ascending=True)
-    ax.barh(ordered["model"], ordered["mae_30m_mw"])
-    ax.set(title="Frozen 2020 30-minute endpoint comparison", xlabel="MAE (MW)", ylabel="")
-    fig.tight_layout(); fig.savefig(out / "endpoint_30m_mae_2020.png", dpi=160); plt.close(fig)
+    render_comparison_figures(six_horizons, endpoint, out)
 
     cells = [
         nbf.v4.new_markdown_cell(
