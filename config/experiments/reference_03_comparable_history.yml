@@ -1,0 +1,19 @@
+job_id: rr_ref_03_comparable_history_30m_all_folds
+model_name: comparable_history_empirical_change
+variant: hierarchical_calendar_cell_median_30m
+model_class: deterministic_reference
+seed: null
+prediction_rule: median historical 30-minute demand change in the first eligible hierarchy cell
+fit_rule: training-fold history only
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters:
+  minimum_cell_count: 20
+  hierarchy:
+    - [interval_of_day, is_weekend, is_public_holiday_qld, month]
+    - [interval_of_day, is_weekend, is_public_holiday_qld]
+    - [interval_of_day, is_public_holiday_qld]
+    - [is_public_holiday_qld]
+    - [global_training_median]
+  horizon_minutes: 30
+output_directory: outputs/reference_models

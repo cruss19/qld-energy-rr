@@ -1,0 +1,16 @@
+job_id: rr_ref_09_aemo_p5min_all_folds
+model_name: aemo_p5min_external_benchmark
+variant: origin_and_target_timestamp_matched
+model_class: external_scoring_benchmark
+seed: null
+prediction_rule: use only forecasts published by AEMO and available at the matched forecast origin
+fit_rule: no fitting; intersection scoring only
+feature_contract_id: rr_public_feature_contract_v1
+folds_from: config/experiments/reference_aemo_common.yml
+major_parameters:
+  required_source: data/interim/aemo_p5min_forecasts_2015_2020.parquet
+  required_columns: [forecast_origin, target_timestamp, horizon_minutes, forecast_demand_mw, region_id]
+  region_id: QLD1
+  horizons_minutes: [5, 10, 15, 20, 25, 30]
+  dispatchregionsum_demandforecast_is_not_a_substitute: true
+output_directory: training_output/reference_models/aemo_p5min_external_benchmark/all_folds

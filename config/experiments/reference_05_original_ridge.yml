@@ -1,0 +1,19 @@
+job_id: rr_ref_05_original_ridge_30m_all_folds
+model_name: ridge_regression
+variant: original_55_feature_30m
+model_class: learned_deterministic_reference
+seed: null
+prediction_rule: Ridge regression of the 30-minute demand-change target
+fit_rule: fold-fitted preprocessing and chronological alpha selection; evaluation targets never used for fitting
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters:
+  base_predictors: 55
+  deterministic_calendar_encodings: 2
+  alpha_grid: [0.0001, 0.000316227766, 0.001, 0.00316227766, 0.01, 0.0316227766, 0.1, 0.316227766, 1.0, 3.16227766, 10.0, 31.6227766, 100.0, 316.227766, 1000.0, 3162.27766, 10000.0]
+  alpha_selection: three-split TimeSeriesSplit with six-row gap and mean validation RMSE
+  solver: sparse_cg
+  max_iter: 2000
+  tolerance: 0.001
+  horizon_minutes: 30
+output_directory: outputs/reference_models

@@ -1,0 +1,11 @@
+job_id: rr_ref_01_persistence_30m_all_folds
+model_name: persistence
+variant: zero_change_30m
+model_class: deterministic_reference
+seed: null
+prediction_rule: predicted demand at t+30m equals observed demand at forecast origin t
+fit_rule: no fitted parameters
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters: {horizon_minutes: 30}
+output_directory: outputs/reference_models

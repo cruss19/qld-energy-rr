@@ -1,0 +1,6 @@
+model,objective,optimizer,learning_rate,weight_decay,dropout,micro_batch_size,gradient_accumulation_steps,gradient_clip_max_norm,min_epochs,max_epochs,lr_patience,early_stopping_patience,checkpoint_rule
+TCN1,six_horizon_standardized_mse,AdamW,0.001,0.01,0.33,512,1,,8,50,1,3,minimum_validation_objective_across_complete_fold_run
+TCN2,six_horizon_standardized_mse,AdamW,0.001,0.01,0.33,512,1,,8,50,1,3,minimum_validation_objective_across_complete_fold_run
+TCN3,six_horizon_standardized_mse,AdamW,0.001,0.01,0.33,512,1,,8,50,1,3,minimum_validation_objective_across_complete_fold_run
+TCN_star,six_horizon_standardized_mse,AdamW,0.0005,0.01,0.33,128,4,1.0,8,50,2,4,minimum_validation_objective_across_complete_fold_run
+TCN_starNLL,dynamic_student_t_nll,AdamW,0.0005,0.01,0.33,128,4,1.0,8,50,2,4,minimum_validation_objective_across_complete_fold_run

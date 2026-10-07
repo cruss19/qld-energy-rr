@@ -1,0 +1,17 @@
+job_id: rr_ref_08_empirical_residual_30m_all_folds
+model_name: empirical_residual
+variant: original_ridge_location_empirical_calibration_residuals
+model_class: probabilistic_reference
+seed: null
+prediction_rule: original Ridge location plus the complete calibration-residual empirical distribution
+fit_rule: residual distribution uses only the trailing training-fold calibration window
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters:
+  location_model: rr_ref_05_original_ridge_30m_all_folds
+  calibration_tail_days: 180
+  density_bins: freedman_diaconis_clipped_30_200
+  histogram_pseudocount: 0.5
+  probability_floor: 1.0e-12
+  horizon_minutes: 30
+output_directory: outputs/probabilistic_reference_models

@@ -1,0 +1,28 @@
+{
+  "status": "complete",
+  "evaluation_year": 2020,
+  "models": [
+    "TCN1",
+    "TCN2",
+    "TCN3",
+    "TCN_star",
+    "TCN_starNLL"
+  ],
+  "seeds": [
+    42,
+    142,
+    242
+  ],
+  "forecast_origins": 105402,
+  "horizons_minutes": [
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "point_ranking_rule": "mean ordinal rank across pooled MAE, pooled RMSE and 30-minute MAE; tie-break pooled MAE then pooled RMSE",
+  "probabilistic_comparison_scope": "NLL, coverage, interval width and PIT are reported only for TCN_starNLL",
+  "source": "RR frozen 2020 member predictions only"
+}

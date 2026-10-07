@@ -1,0 +1,11 @@
+job_id: rr_ref_02_weekly_seasonal_naive_30m_all_folds
+model_name: weekly_seasonal_naive
+variant: exact_target_slot_previous_week_30m
+model_class: deterministic_reference
+seed: null
+prediction_rule: demand at target timestamp t+30m minus seven days
+fit_rule: no fitted parameters
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters: {seasonal_period_steps: 2016, horizon_minutes: 30}
+output_directory: outputs/reference_models

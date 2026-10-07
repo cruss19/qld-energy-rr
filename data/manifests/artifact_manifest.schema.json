@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RR data artifact manifest row",
+  "type": "object",
+  "required": [
+    "source_id",
+    "relative_path",
+    "retrieved_at_utc",
+    "byte_size",
+    "sha256",
+    "coverage_start",
+    "coverage_end",
+    "acquisition_mode"
+  ],
+  "properties": {
+    "source_id": {"type": "string", "minLength": 1},
+    "relative_path": {"type": "string", "minLength": 1},
+    "retrieved_at_utc": {"type": "string", "format": "date-time"},
+    "byte_size": {"type": "integer", "minimum": 0},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "coverage_start": {"type": ["string", "null"]},
+    "coverage_end": {"type": ["string", "null"]},
+    "acquisition_mode": {"enum": ["missing", "pinned_download", "pinned_manual"]},
+    "request_fingerprint": {"type": ["string", "null"]},
+    "notes": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

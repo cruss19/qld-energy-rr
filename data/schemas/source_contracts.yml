@@ -1,0 +1,112 @@
+contracts:
+  provenance_policy:
+    observation_start: 2015-01-01
+    observation_end: 2020-12-31
+    latest_source_release: 2020-12-31
+    later_provider_file_then_trim: forbidden
+    identity_rule: fixed byte size and SHA-256 for every versioned artifact
+  aemo_dispatchregionsum:
+    format: parquet
+    key:
+    - SETTLEMENTDATE
+    cadence: 5min
+    timezone_interpretation: NEM time aligned to Australia/Brisbane
+    required_columns:
+      SETTLEMENTDATE: datetime
+      REGIONID: string
+      DISPATCHINTERVAL: integer
+      RUNNO: integer
+      INTERVENTION: integer
+      LASTCHANGED: datetime
+      TOTALDEMAND: numeric
+      DEMANDFORECAST: numeric
+      AVAILABLEGENERATION: numeric
+      NETINTERCHANGE: numeric
+      UIGF: numeric
+    invariants:
+      REGIONID: QLD1
+      one_physical_solution_per_interval: true
+      demandforecast_is_model_input: false
+  aemo_p5min_regionsolution:
+    format: parquet
+    source_table: P5MIN_REGIONSOLUTION
+    key:
+    - forecast_origin
+    - target_timestamp
+    - region_id
+    cadence: one forecast run every 5min with 5min target intervals
+    timezone_interpretation: NEM time aligned to Australia/Brisbane
+    required_columns:
+      forecast_origin: datetime
+      target_timestamp: datetime
+      horizon_minutes: integer
+      region_id: string
+      forecast_demand_mw: numeric
+      demandforecast_delta_mw: numeric
+      last_changed: datetime
+      source_month: string
+      source_url: string
+    invariants:
+      REGIONID: QLD1
+      horizons_minutes:
+      - 5
+      - 10
+      - 15
+      - 20
+      - 25
+      - 30
+      forecast_origin_range: 2015-01-01 through 2020-12-31
+      target_timestamp_latest: 2020-12-31 23:55:00
+      dispatchregionsum_demandforecast_is_substitute: false
+      use_as_learned_model_input: false
+      probabilistic_metrics_available: false
+  open_meteo_hourly:
+    format: parquet
+    key:
+    - region
+    - datetime
+    cadence: 1h
+    timezone_interpretation: Australia/Brisbane local civil time
+    required_columns:
+      region: string
+      datetime: datetime
+      latitude: numeric
+      longitude: numeric
+      open_meteo_elevation_m: numeric
+      temperature_2m: numeric
+      relative_humidity_2m: numeric
+      dew_point_2m: numeric
+      wet_bulb_temperature_2m: numeric
+      apparent_temperature: numeric
+      precipitation: numeric
+      rain: numeric
+      cloud_cover: numeric
+      surface_pressure: numeric
+      weather_code: numeric
+      wind_speed_10m: numeric
+      wind_gusts_10m: numeric
+      shortwave_radiation: numeric
+      direct_radiation: numeric
+      diffuse_radiation: numeric
+      direct_normal_irradiance: numeric
+      sunshine_duration: numeric
+      is_day: numeric
+      soil_temperature_0_to_7cm: numeric
+    invariants:
+      regions: 5
+      duplicate_region_datetime_rows: 0
+  abs_asgs_boundaries:
+    edition: 2016
+    required_archives:
+    - SA2_2016_AUST_SHP.zip
+    - POA_2016_AUST_SHP.zip
+  cer_sres_postcode_capacity:
+    latest_source_date: 2020-10-31
+    rule: use only the fixed historical workbooks and the all-data snapshot captured
+      in 2020
+  qgso_qld_annual_population:
+    product: Annual Queensland estimated resident population
+    reference_years: 2013 through 2020
+    availability_rule: reference-year value becomes active on 1 April of the following
+      year
+    model_route: one training-fold-standardized scalar at late fusion

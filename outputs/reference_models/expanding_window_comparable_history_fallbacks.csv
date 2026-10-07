@@ -1,0 +1,13 @@
+fold,evaluation_year,fallback_level,rows
+1,2017,interval_daytype_holiday_month,72288
+1,2017,interval_daytype_holiday,29370
+1,2017,interval_holiday,3456
+2,2018,interval_daytype_holiday_month,101946
+2,2018,interval_daytype_holiday,2592
+2,2018,interval_holiday,576
+3,2019,interval_daytype_holiday_month,101874
+3,2019,interval_daytype_holiday,2664
+3,2019,interval_holiday,576
+4,2020,interval_daytype_holiday_month,101874
+4,2020,interval_daytype_holiday,2376
+4,2020,interval_holiday,1152

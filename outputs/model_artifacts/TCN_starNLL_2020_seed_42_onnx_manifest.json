@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "onnx_checker": "onnx.checker.check_model(full_check=True)",
+  "opset": 18,
+  "onnx_path": "outputs\\model_artifacts\\TCN_starNLL_2020_seed_42.onnx",
+  "onnx_sha256": "00707426b62b80826802c765761326e4c340155b46cfb9a381c6c22d69f55303",
+  "checkpoint_path": "training_output\\runs\\TCN_starNLL\\final\\train_2015_2019\\seed_42\\frozen_model.pt",
+  "checkpoint_sha256": "1424ece584844e39764929ee79a5f4cd0e20717a29d90ac5d2cf7c39761b80c0",
+  "calendar_encoded_width": 55,
+  "input_shapes": {
+    "demand_history": [
+      "batch",
+      7,
+      505
+    ],
+    "system_history": [
+      "batch",
+      16,
+      505
+    ],
+    "climate_history": [
+      "batch",
+      2,
+      505
+    ],
+    "regional_history": [
+      "batch",
+      5,
+      10,
+      505
+    ],
+    "calendar": [
+      "batch",
+      55
+    ],
+    "population": [
+      "batch",
+      1
+    ]
+  },
+  "output_shapes": {
+    "mu": [
+      "batch",
+      6
+    ],
+    "scale": [
+      "batch",
+      6
+    ],
+    "df": [
+      "batch",
+      6
+    ]
+  }
+}

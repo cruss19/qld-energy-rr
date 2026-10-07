@@ -1,0 +1,78 @@
+experiment_id: rr_tcn_star_nll_causal_feature_estimates_validate_2019_seed42
+model_name: TCN_starNLL_causal_feature_estimates
+variant_name: demand_direct_radiation_estimated_sd
+dataset: data/processed/rr_original_model_frame_5min_2015_2020.parquet
+helper_sources:
+  demand: data/processed/rr_demand_calendar_base_5min_2015_2020.parquet
+  direct_radiation: data/interim/regional_weather_hourly_validated_2015_2020.parquet
+
+split:
+  train_start: '2015-01-01'
+  train_end_exclusive: '2019-01-01'
+  validation_start: '2019-01-01'
+  validation_end_exclusive: '2020-01-01'
+  seed: 42
+
+causal_helpers:
+  constructed_upstream_before_tcn: true
+  standard_deviation_ddof: 1
+  demand:
+    columns: [demand_estimated, demand_estimated_sd]
+    terminal_value: demand_estimated[t]
+    sd_route: fully timestamp-aligned temporal feature
+    ordinary_weekday_donors: same clock and weekday at t-7d, t-14d, t-21d
+    weekday_holiday_donor_replacement: nearest Sunday at the same clock time
+    weekend_donors: same clock and weekday in each of the previous three weeks
+    public_holiday_donors: same clock on each of the previous three Sundays
+    incomplete_donors: NA until all three donors exist
+    estimated_scaling: use totaldemand_mw training-fold mean and scale
+    sd_scaling: divide by totaldemand_mw training-fold scale without centering
+  direct_radiation:
+    regions: [brisbane, cairns_atherton, dalby_chinchilla, emerald_gladstone, townsville_burdekin]
+    columns_per_region: [direct_radiation_estimated, direct_radiation_estimated_sd]
+    terminal_value: direct_radiation_estimated[t]
+    sd_route: fully timestamp-aligned regional temporal feature
+    donors: same clock observations at t-1d, t-2d, t-3d
+    historical_actual_alignment: last completed source hour
+    incomplete_donors: NA until all three donors exist
+    estimated_scaling: per-region min-max fitted on training fold and clipped to [0,1]
+    sd_scaling: divide by the corresponding training-fold radiation range without centering
+
+architecture:
+  sequence_steps: 505
+  kernel_size: 5
+  dilations: [1, 2, 4, 8, 16, 32, 1, 2, 4, 8, 16, 32]
+  demand_channels: 8
+  system_channels: 16
+  climate_channels: 2
+  regions: 5
+  regional_channels_per_region: 12
+  dropout: 0.33
+  fusion_hidden_width: 128
+  horizons_minutes: [5, 10, 15, 20, 25, 30]
+  output_distribution: bounded_student_t
+  minimum_scale: 0.0001
+  minimum_df: 2.1
+  maximum_df: 20.0
+  initial_df: 4.0
+
+training:
+  optimizer: AdamW
+  learning_rate: 0.0005
+  weight_decay: 0.01
+  micro_batch_size: 128
+  gradient_accumulation_steps: 4
+  effective_batch_size: 512
+  gradient_clip_max_norm: 1.0
+  reduce_lr_on_plateau_factor: 0.5
+  reduce_lr_on_plateau_patience: 2
+  minimum_learning_rate: 0.00001
+  minimum_epochs: 8
+  maximum_epochs: 50
+  early_stopping_patience: 4
+  checkpoint_selection: minimum_validation_nll
+  restore_best_at_end: true
+  precision: float32
+  amp_enabled: false
+
+output_directory: training_output/runs/TCN_starNLL_causal_feature_estimates/development/validation_2019/seed_42

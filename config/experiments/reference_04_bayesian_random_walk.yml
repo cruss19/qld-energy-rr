@@ -1,0 +1,11 @@
+job_id: rr_ref_04_bayesian_random_walk_30m_all_folds
+model_name: bayesian_random_walk
+variant: normal_inverse_gamma_student_t_predictive_30m
+model_class: probabilistic_reference
+seed: null
+prediction_rule: posterior predictive distribution of historical 30-minute demand changes
+fit_rule: closed-form Normal-Inverse-Gamma posterior fitted on the training fold
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters: {prior_mu0: 0.0, prior_kappa0: 1.0e-6, prior_alpha0: 2.0, prior_beta0: 1.0, horizon_minutes: 30}
+output_directory: outputs/reference_models

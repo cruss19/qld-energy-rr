@@ -1,0 +1,52 @@
+experiment_id: rr_tcn_star_nll_original_validate_2018_seed42
+model_name: TCN_starNLL
+variant_name: frozen_original_star_nll
+dataset: data/processed/rr_tcn_star_nll_original_2015_2020.parquet
+source_contract: original PR final repository TCN_starNLL
+
+split:
+  train_start: '2015-01-01'
+  train_end_exclusive: '2018-01-01'
+  validation_start: '2018-01-01'
+  validation_end_exclusive: '2019-01-01'
+  seed: 42
+
+architecture:
+  sequence_steps: 505
+  kernel_size: 5
+  dilations: [1, 2, 4, 8, 16, 32, 1, 2, 4, 8, 16, 32]
+  demand_channels: 7
+  system_channels: 16
+  climate_channels: 2
+  regions: 5
+  regional_channels_per_region: 10
+  dropout: 0.33
+  fusion_hidden_width: 128
+  horizons_minutes: [5, 10, 15, 20, 25, 30]
+  output_distribution: bounded_student_t
+  minimum_scale: 0.0001
+  minimum_df: 2.1
+  maximum_df: 20.0
+  initial_df: 4.0
+
+training:
+  optimizer: AdamW
+  learning_rate: 0.0005
+  weight_decay: 0.01
+  micro_batch_size: 128
+  gradient_accumulation_steps: 4
+  effective_batch_size: 512
+  gradient_clip_max_norm: 1.0
+  reduce_lr_on_plateau_factor: 0.5
+  reduce_lr_on_plateau_patience: 2
+  minimum_learning_rate: 0.00001
+  minimum_epochs: 8
+  maximum_epochs: 50
+  early_stopping_patience: 4
+  checkpoint_selection: minimum_validation_nll
+  restore_best_at_end: true
+  precision: float32
+  amp_enabled: false
+
+output_directory: training_output/runs/TCN_starNLL_original/development/validation_2018/seed_42
+epoch_metrics_table: training_output/metrics/tcn_star_nll_original_validation_2018_seed42_epochs.csv

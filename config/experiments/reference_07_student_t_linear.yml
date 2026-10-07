@@ -1,0 +1,20 @@
+job_id: rr_ref_07_student_t_linear_30m_all_folds
+model_name: student_t_linear
+variant: student_t_irls_location_scale_df_30m
+model_class: probabilistic_reference
+seed: null
+prediction_rule: penalised Student-t linear location with calibrated scale and degrees of freedom
+fit_rule: preprocessing, location, scale and degrees of freedom use training-fold data only
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters:
+  initial_location_model: original Ridge
+  irls_iterations: 5
+  ridge_solver: lsqr
+  ridge_tolerance: 0.0001
+  ridge_max_iter: 1000
+  calibration_tail_days: 180
+  degrees_of_freedom_floor: 2.0
+  scale_floor_mw: 1.0e-6
+  horizon_minutes: 30
+output_directory: outputs/probabilistic_reference_models

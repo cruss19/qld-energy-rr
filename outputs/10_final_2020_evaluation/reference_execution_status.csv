@@ -1,0 +1,10 @@
+model,status,reason
+Persistence,COMPLETE,
+Weekly seasonal naive,COMPLETE,
+Comparable-history empirical change,COMPLETE,
+Bayesian random walk,COMPLETE,
+Ridge regression,COMPLETE,
+Gaussian linear,COMPLETE,
+Student-t linear,COMPLETE,
+Empirical residual,COMPLETE,
+AEMO P5MIN external benchmark,COMPLETE,

@@ -1,0 +1,23 @@
+{
+  "contract": "Original five 30-minute reference models",
+  "public_window": {
+    "start": "2015-01-01 00:00:00",
+    "end_exclusive": "2021-01-01 00:00:00"
+  },
+  "feature_rows": 631295,
+  "feature_columns": 58,
+  "ridge_base_features": 55,
+  "evaluation_years": [
+    2017,
+    2018,
+    2019,
+    2020
+  ],
+  "prediction_rows": 2103720,
+  "source_checksums": {
+    "feature_source_sha256": "21cecfce99fc184568e1bf815ec28cc9997cfebcdd94d5635d3077c635d1c054",
+    "feature_contract_source_sha256": "635c7648e4e35e9a100d4a8dc2bf95cd1392e2c0fecc57153a48dd8f6554ebae",
+    "predictions_source_sha256": "b2d9d9156432a759e44f09b181b6ee707784817fd39f9477201f8b02d17b53fe"
+  },
+  "privacy_boundary": "All written data and results are restricted to 2015-01-01 through 2020-12-31."
+}

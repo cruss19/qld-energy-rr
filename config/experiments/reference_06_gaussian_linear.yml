@@ -1,0 +1,11 @@
+job_id: rr_ref_06_gaussian_linear_30m_all_folds
+model_name: gaussian_linear
+variant: original_ridge_location_gaussian_calibration
+model_class: probabilistic_reference
+seed: null
+prediction_rule: original Ridge location with Gaussian calibration-residual scale
+fit_rule: location and scale fitted using training-fold data only
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+folds_from: config/experiments/reference_common.yml
+major_parameters: {location_model: rr_ref_05_original_ridge_30m_all_folds, calibration_tail_days: 180, scale_floor_mw: 1.0e-6, horizon_minutes: 30}
+output_directory: outputs/probabilistic_reference_models

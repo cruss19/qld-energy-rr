@@ -1,0 +1,133 @@
+study:
+  timezone: Australia/Brisbane
+  study_start: 2015-01-01
+  study_end: 2020-12-31
+  target_cadence: 5min
+
+provenance_policy:
+  earliest_observation: 2015-01-01
+  latest_observation: 2020-12-31
+  latest_source_release: 2020-12-31
+  reject_post_cutoff_content: true
+
+controls:
+  default_mode: verify
+  allowed_modes:
+    - verify
+    - missing
+  network_environment_variable: RR_ALLOW_NETWORK
+  mode_environment_variable: RR_ACQUISITION_MODE
+  overwrite_existing: false
+
+paths:
+  raw_root: data/raw
+  external_root: data/external
+  interim_root: data/interim
+  processed_root: data/processed
+  manifest_path: data/manifests/artifacts.csv
+  source_registry_path: data/manifests/source_registry_2020.yml
+
+aemo_dispatchregionsum:
+  table: DISPATCHREGIONSUM
+  region_id: QLD1
+  start_time: "2015/01/01 00:00:00"
+  end_time: "2020/12/31 23:59:59"
+  selected_columns:
+    - SETTLEMENTDATE
+    - REGIONID
+    - DISPATCHINTERVAL
+    - RUNNO
+    - INTERVENTION
+    - LASTCHANGED
+    - TOTALDEMAND
+    - DEMANDFORECAST
+    - AVAILABLEGENERATION
+    - NETINTERCHANGE
+    - UIGF
+  canonical_output: data/raw/aemo/qld_dispatchregionsum_2015_2020.parquet
+  cache_directory: data/raw/aemo/nemosis_cache
+
+aemo_p5min_regionsolution:
+  table: P5MIN_REGIONSOLUTION
+  region_id: QLD1
+  start_year: 2015
+  end_year: 2020
+  horizons_minutes: [5, 10, 15, 20, 25, 30]
+  historical_table_url_template: https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{year}/MMSDM_{year}_{month}/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_DVD_P5MIN_REGIONSOLUTION_{year}{month}010000.zip
+  table_archive_url_template: https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{year}/MMSDM_{year}_{month}/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_ARCHIVE%23P5MIN_REGIONSOLUTION%23FILE01%23{year}{month}010000.zip
+  legacy_archive_url_template: https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{year}/MMSDM_{year}_{month}/MMSDM_Historical_Data_SQLLoader/P5MIN_ALL_DATA/PUBLIC_DVD_P5MIN_REGIONSOLUTION_ALL_{year}{month}010000.zip
+  monthly_directory: data/raw/aemo/p5min_qld_monthly
+  source_manifest: data/raw/aemo/p5min_qld_monthly/source_manifest.csv
+  canonical_output: data/raw/aemo/qld_p5min_regionsolution_2015_2020.parquet
+  processed_output: data/interim/aemo_p5min_forecasts_2015_2020.parquet
+  required_fields:
+    - RUN_DATETIME
+    - INTERVAL_DATETIME
+    - REGIONID
+    - TOTALDEMAND
+    - DEMANDFORECAST
+    - LASTCHANGED
+
+open_meteo:
+  endpoint: https://archive-api.open-meteo.com/v1/archive
+  timezone: Australia/Brisbane
+  start_date: 2015-01-01
+  end_date: 2020-12-31
+  request_pause_seconds: 5
+  max_retries: 8
+  canonical_output: data/raw/open_meteo/qld_five_node_hourly_2015_2020.parquet
+  hourly_variables:
+    - temperature_2m
+    - relative_humidity_2m
+    - dew_point_2m
+    - wet_bulb_temperature_2m
+    - apparent_temperature
+    - precipitation
+    - rain
+    - cloud_cover
+    - surface_pressure
+    - weather_code
+    - wind_speed_10m
+    - wind_gusts_10m
+    - shortwave_radiation
+    - direct_radiation
+    - diffuse_radiation
+    - direct_normal_irradiance
+    - sunshine_duration
+    - is_day
+    - soil_temperature_0_to_7cm
+
+bom_soi:
+  endpoint: https://www.bom.gov.au/clim_data/IDCKGSH000/soi_monthly.txt
+  landing_page: https://www.bom.gov.au/climate/enso/soi/
+  observation_start: 1876-01-01
+  # November is the last source month needed for forecast origins through
+  # December 2020 under the preserved next-month availability convention.
+  observation_end: 2020-11-30
+  canonical_output: data/raw/bom/soi_monthly_through_2020.csv
+  persisted_columns: [month, soi]
+  availability_rule: monthly value is admitted at 19:00 Brisbane time on the first day of the following month
+
+cer_regional_solar:
+  source_workbook: data/external/cer/cer_sres_all_data_as_at_2020-10-31.xlsx
+  poa_boundary_archive: data/external/abs/asgs/POA_2016_AUST_SHP.zip
+  canonical_output: data/processed/SGU_Solar_monthly_2015_2020.parquet
+  start_month: 2015-01-31
+  end_month: 2020-12-31
+  availability_rule: month M cumulative capacity is admitted from the first day of M+1
+  project_nodes:
+    - region: Cairns / Atherton
+      latitude: -16.8736
+      longitude: 145.7458
+    - region: Townsville / Burdekin
+      latitude: -19.2525
+      longitude: 146.7653
+    - region: Emerald / Gladstone
+      latitude: -23.5675
+      longitude: 148.1792
+    - region: Dalby / Chinchilla
+      latitude: -27.1553
+      longitude: 151.2675
+    - region: Brisbane
+      latitude: -27.3842
+      longitude: 153.1175

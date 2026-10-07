@@ -1,0 +1,30 @@
+{
+  "source_repository": "qld-demand-forecasting-dream",
+  "source_relative_directory": "redundancy/pre_v6_workspace_20260905/outputs/probabilistic_reference_models",
+  "source_status": "uncommitted historical output archive",
+  "rr_action": "copied and filtered to the RR public evaluation boundary",
+  "retained_evaluation_years": [
+    2017,
+    2018,
+    2019,
+    2020
+  ],
+  "retained_models": [
+    "Empirical residual",
+    "Gaussian linear",
+    "Student-t linear"
+  ],
+  "retained_prediction_rows": 1262232,
+  "latest_target_timestamp": "2020-12-31 23:55:00",
+  "source_sha256": {
+    "probabilistic_btcn_ridge_parity_audit.csv": "a759431bc0adbb0b8e19ae9b99af35da309332d731c26bf171d0ec31dbfe9858",
+    "probabilistic_calibration_by_fold.csv": "72aefc247c513b3fb01d443b64e1078f72a59072d7a501eeaf280b3d5c6ff4f5",
+    "probabilistic_calibration_pooled.csv": "f8f1b171695dae6ede70dae6d436214e882fe65a8ea5b8ce2af89bf998984bce",
+    "probabilistic_fold_parameters.csv": "9ee4bb926d1495ce74deb8925f4133284612ec6286c253c0c3591bd077db552b",
+    "probabilistic_metrics_by_fold.csv": "419bba7be30cb7447d2bde1f4094fefd25d90405d29a68b31503cd8cbb410c62",
+    "probabilistic_metrics_pooled.csv": "c51bd9772552667ad0a57b1e089f5f4c0ab2f454b37368724673baabf40e6760",
+    "probabilistic_model_feature_contract.csv": "06b27e3fa683adab7314995f30549c3d9dacff3d13252c6d8f808bcec4d079ed",
+    "probabilistic_oof_predictions.parquet": "454f78069be3f068841f5f57fb55836d78af42cf6610dcf6b114e94672fb6811"
+  },
+  "no_model_refit": true
+}

@@ -1,0 +1,27 @@
+protocol_id: rr_original_30m_reference_protocol_v1
+feature_contract_id: rr_original_ridge_55_feature_contract_v1
+dataset:
+  origin_frame: data/processed/rr_reference_model_frame_5min_2015_2020.parquet
+  timestamp: datetime
+  target_change_column: target_ramp_next_30min
+  horizon_minutes: 30
+  forbidden_learned_input: DEMANDFORECAST
+folds:
+  - {fold_id: validate_2017, train_start: "2015-01-01 00:00:00", train_end: "2016-12-31 23:55:00", evaluation_start: "2017-01-01 00:00:00", evaluation_end: "2017-12-31 23:55:00", role: development_validation}
+  - {fold_id: validate_2018, train_start: "2015-01-01 00:00:00", train_end: "2017-12-31 23:55:00", evaluation_start: "2018-01-01 00:00:00", evaluation_end: "2018-12-31 23:55:00", role: development_validation}
+  - {fold_id: validate_2019, train_start: "2015-01-01 00:00:00", train_end: "2018-12-31 23:55:00", evaluation_start: "2019-01-01 00:00:00", evaluation_end: "2019-12-31 23:55:00", role: development_validation}
+  - {fold_id: evaluate_2020, train_start: "2015-01-01 00:00:00", train_end: "2019-12-31 23:55:00", evaluation_start: "2020-01-01 00:00:00", evaluation_end: "2020-12-31 23:55:00", role: final_fixed_protocol_evaluation}
+preprocessing:
+  fit_scope: training_fold_only
+  numeric_imputer: median
+  numeric_scaler: StandardScaler
+  categorical_imputer: most_frequent
+  categorical_encoder: OneHotEncoder(handle_unknown=ignore)
+selection:
+  inner_cv: TimeSeriesSplit
+  inner_splits: 3
+  inner_gap_rows: 6
+  selection_metric: RMSE_MW
+metrics:
+  point: [MAE_MW, RMSE_MW, signed_bias_MW]
+  probabilistic: [mean_NLL, mean_CRPS_MW, coverage_50, coverage_80, coverage_95, mean_interval_width, PIT]

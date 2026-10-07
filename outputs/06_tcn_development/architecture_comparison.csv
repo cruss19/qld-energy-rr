@@ -1,0 +1,6 @@
+model,temporal_design,sequence_steps,history,kernel_size,dilations,branches,regional_treatment,output,parameters
+TCN1,single consolidated 75-channel backbone,13,forecast origin plus previous 60 minutes,3,"1, 2",1,five regions flattened into 50 channels,six deterministic changes,72902
+TCN2,symmetrical multi-branch equalizer,13,forecast origin plus previous 60 minutes,3,"1, 2",3,50-channel regional branch,six deterministic changes,96646
+TCN3,hierarchical spatiotemporal learner,13,forecast origin plus previous 60 minutes,3,"1, 2",3,"shared 10-channel encoder, then mean over regions",six deterministic changes,53222
+TCN_star,deep-lookback TCN2 branch design,505,forecast origin plus previous 42 hours,5,"1, 2, 4, 8, 16, 32 repeated twice",3,50-channel regional branch,six deterministic changes,758470
+TCN_starNLL,TCN_star backbone with Student-t heads,505,forecast origin plus previous 42 hours,5,"1, 2, 4, 8, 16, 32 repeated twice",3,50-channel regional branch,"location, scale and df for each of six horizons",760018

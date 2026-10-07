@@ -1,0 +1,15 @@
+model,native_2020_origins,common_2020_origins
+TCN1,105400,105400
+TCN2,105400,105400
+TCN3,105400,105400
+TCN_star,105400,105400
+TCN_starNLL,105400,105400
+aemo_p5min_external_benchmark,105400,105400
+Persistence,105402,105400
+Weekly seasonal naive,105402,105400
+Comparable-history empirical change,105402,105400
+Bayesian random walk,105402,105400
+Ridge regression,105402,105400
+Gaussian linear,105402,105400
+Student-t linear,105402,105400
+Empirical residual,105402,105400

@@ -1,0 +1,73 @@
+contract_id: rr_public_feature_contract_v1
+study_window:
+  start: '2015-01-01 00:00:00'
+  end: '2020-12-31 23:55:00'
+  development_end: '2019-12-31 23:55:00'
+  final_evaluation_year: 2020
+sources:
+  demand_calendar_base: data/processed/rr_demand_calendar_base_5min_2015_2020.parquet
+  regional_weather: data/interim/regional_weather_hourly_validated_2015_2020.parquet
+  monthly_soi: data/raw/bom/soi_monthly_through_2020.csv
+  regional_solar_capacity: data/processed/SGU_Solar_monthly_original_contract_2015_2020.parquet
+  public_holiday_periods: config/qld_public_holiday_periods_2015_2020.csv
+target:
+  definition: totaldemand_mw(t+h) - totaldemand_mw(t)
+  horizons_minutes: [5, 10, 15, 20, 25, 30]
+  cadence_minutes: 5
+eligibility:
+  common_history_steps: 2016
+  tcn_history_steps: 505
+  require_all_six_targets: true
+  require_intervention_zero: true
+forbidden_model_inputs:
+  - Population_2
+  - DEMANDFORECAST
+  - dispatchregionsum_demandforecast_source
+feature_groups:
+  demand_history:
+    features: [totaldemand_mw, demand_lag_5min, demand_lag_15min, demand_lag_30min, demand_lag_24h, demand_lag_7d, callide_c_status]
+    route: causal temporal history; exact 505 states for TCN; the original Ridge uses its separately declared 55-feature endpoint contract
+    availability: closed AEMO dispatch intervals at or before the forecast origin
+    fold_transformation: training-fold z-score per channel
+    missing_value_rule: no interior imputation; exclude incomplete causal windows
+  system_history:
+    features: [availablegeneration_mw, availablegeneration_mw_lag_5m, availablegeneration_mw_lag_15m, availablegeneration_mw_lag_30m, netinterchange_mw, netinterchange_mw_lag_5m, netinterchange_mw_lag_15m, netinterchange_mw_lag_30m, uigf_mw, uigf_mw_lag_5m, uigf_mw_lag_15m, uigf_mw_lag_30m, supply_cushion_mw, supply_cushion_mw_lag_5m, supply_cushion_mw_lag_15m, supply_cushion_mw_lag_30m]
+    route: causal temporal history; exact 505 states for TCN; the original Ridge uses its separately declared 55-feature endpoint contract
+    availability: closed AEMO dispatch intervals at or before the forecast origin
+    fold_transformation: training-fold z-score per channel
+    missing_value_rule: no interior imputation; exclude incomplete causal windows
+  climate_history:
+    features: [soi_lag_1m, soi_3m_mean_lag_1m]
+    route: causal temporal history
+    availability: monthly BOM SOI admitted at 19:00 Brisbane time on the first day of the following month under the preserved original contract
+    fold_transformation: training-fold z-score per channel
+    missing_value_rule: no missing value permitted after publication-safe alignment
+  calendar_late_fusion:
+    features: [day_of_week, is_weekend, is_public_holiday_qld, is_school_holiday_qld, month, season, is_day_before_public_holiday, is_day_after_public_holiday, holiday_type, time_of_day_sin, time_of_day_cos, day_of_year_sin, day_of_year_cos, is_workday, is_school_day]
+    route: forecast-origin late fusion
+    availability: deterministic or published calendar information known at forecast origin
+    fold_transformation: one-hot encode day_of_week month season holiday_type on training vocabulary; retain remaining numeric values
+    missing_value_rule: none permitted
+    boundary_support: the deterministic 2021-01-01 Queensland public holiday is used only to calculate the 2020-12-31 day-before-holiday flag; no 2021 observation enters the RR
+  structural_population:
+    features: [total_qld_population]
+    route: one forecast-origin scalar at late fusion
+    availability: original annual Queensland estimate changing on 1 April
+    fold_transformation: training-fold z-score
+    missing_value_rule: none permitted
+regional_weather:
+  regions: [brisbane, cairns_atherton, dalby_chinchilla, emerald_gladstone, townsville_burdekin]
+  variables: [dry_bulb_temp, dry_bulb_temp_lag_5m, dry_bulb_temp_lag_15m, dry_bulb_temp_lag_30m, dew_point_2m, wet_bulb_temperature_2m, cloud_cover, rainfall_24h_lagged, regional_installed_capacity_mw, tts]
+  route: region-major causal temporal history; exact 505 states for TCN; the original Ridge uses its separately declared 55-feature endpoint contract
+  availability: hourly weather carried forward from its timestamp; rainfall uses 24 completed hours; CER capacity admitted on the first day after source month-end; tts is astronomical
+  fold_transformation: independent training-fold z-score by region and channel
+  missing_value_rule: no missing value permitted inside an eligible causal window
+architecture_contract:
+  demand_channels: 7
+  system_channels: 16
+  climate_channels: 2
+  regions: 5
+  regional_channels_per_region: 10
+  sequence_steps: 505
+  calendar_encoded_width_final_2015_2019_fold: 55
+  structural_late_fusion_width: 1

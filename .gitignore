@@ -1,0 +1,103 @@
+# Local agent operating instructions (not part of the public project)
+AGENTS.md
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and local configuration
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Credentials and keys
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*.json
+secrets*.json
+
+# Local data products: retain only explicit placeholders/manifests/fixtures
+data/raw/**
+data/interim/**
+data/processed/**
+data/external/**
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+!data/manifests/**
+!data/fixtures/**
+
+# Generated training and monitoring products
+training_output/**
+!training_output/.gitkeep
+tensor_logs/**
+!tensor_logs/.gitkeep
+tensorboard/logs/**
+
+# Generated outputs are local until deliberately reviewed for publication
+outputs/**
+!outputs/.gitkeep
+!outputs/reference_models/
+outputs/reference_models/*
+!outputs/reference_models/*.csv
+!outputs/reference_models/reference_assets_manifest.json
+!outputs/probabilistic_reference_models/
+outputs/probabilistic_reference_models/*
+!outputs/probabilistic_reference_models/*.csv
+!outputs/probabilistic_reference_models/probabilistic_reference_assets_manifest.json
+# Temporary work
+tmp/**
+!tmp/.gitkeep
+
+# Model/checkpoint binaries
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Large columnar/data archives
+*.parquet
+*.feather
+*.arrow
+*.zip
+*.7z
+*.tar
+*.gz
+
+# Reviewed publication evidence
+!outputs/06_tcn_development/
+!outputs/06_tcn_development/*.csv
+!outputs/06_tcn_development/*.png
+
+!outputs/09_tcn_ensemble_comparison/
+!outputs/09_tcn_ensemble_comparison/*.csv
+!outputs/09_tcn_ensemble_comparison/*.json
+!outputs/09_tcn_ensemble_comparison/*.md
+!outputs/09_tcn_ensemble_comparison/*.png
+
+!outputs/10_final_2020_evaluation/
+!outputs/10_final_2020_evaluation/*.csv
+!outputs/10_final_2020_evaluation/*.png
+
+!outputs/model_artifacts/
+!outputs/model_artifacts/TCN_starNLL_2020_seed_42_onnx_manifest.json
+!outputs/model_artifacts/TCN_starNLL_2020_seed_42.onnx
+!outputs/model_artifacts/TCN_starNLL_architecture.png
