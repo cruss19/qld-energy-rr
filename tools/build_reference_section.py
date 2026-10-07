@@ -29,6 +29,11 @@ apply_rr_plot_style()
 HORIZONS = (5, 10, 15, 20, 25, 30)
 TCNS = ("TCN1", "TCN2", "TCN3", "TCN_star", "TCN_starNLL")
 AEMO = "aemo_p5min_external_benchmark"
+FINAL_CHAMPION = "TCN_starNLL_noSD"
+FINAL_LABELS = {
+    FINAL_CHAMPION: "TCN_starNLL_noSD three-seed ensemble",
+    AEMO: "AEMO P5MIN external benchmark",
+}
 REFERENCE_LABELS = {
     "Persistence": "Persistence",
     "Weekly seasonal naive": "Weekly seasonal naive",
@@ -263,86 +268,150 @@ def render_comparison_figures(
     fig.tight_layout(); fig.savefig(output_directory / "endpoint_30m_mae_2020.png", dpi=160); plt.close(fig)
 
 
+def load_final_30m_comparison() -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Load only the preselected champion and external AEMO benchmark."""
+    champion_path = (
+        ROOT
+        / "training_output/ensembles/TCN_starNLL_noSD_ensemble_2020_seeds_42_142_242/ensemble_predictions.parquet"
+    )
+    aemo_path = (
+        ROOT
+        / "training_output/reference_models/aemo_p5min_external_benchmark/all_folds/predictions.parquet"
+    )
+    champion = pd.read_parquet(champion_path)
+    aemo = pd.read_parquet(aemo_path)
+    aemo = aemo.loc[aemo["fold"].eq("evaluate_2020")].drop(columns="fold")
+    for frame in (champion, aemo):
+        frame["forecast_origin"] = pd.to_datetime(frame["forecast_origin"])
+    champion = champion.sort_values("forecast_origin").drop_duplicates("forecast_origin").set_index("forecast_origin")
+    aemo = aemo.sort_values("forecast_origin").drop_duplicates("forecast_origin").set_index("forecast_origin")
+    return champion, aemo
+
+
+def final_30m_row(model: str, frame: pd.DataFrame, actual: np.ndarray) -> dict:
+    predicted = frame["predicted_change_30m_mw"].to_numpy(float)
+    error = predicted - actual
+    return {
+        "model": FINAL_LABELS[model],
+        "role": "2019-selected champion" if model == FINAL_CHAMPION else "external benchmark",
+        "forecast_origins": len(frame),
+        "mae_30m_mw": np.mean(np.abs(error)),
+        "rmse_30m_mw": np.sqrt(np.mean(error**2)),
+        "bias_30m_mw": np.mean(error),
+    }
+
+
+def render_final_30m_figure(comparison: pd.DataFrame, output_directory: Path) -> None:
+    apply_rr_plot_style()
+    ordered = comparison.sort_values("mae_30m_mw", ascending=False)
+    gain = comparison.loc[
+        comparison["role"].eq("2019-selected champion"),
+        "mae_gain_vs_aemo_percent",
+    ].iloc[0]
+    fig, ax = plt.subplots(figsize=(10, 5.5))
+    colors = plt.cm.plasma(np.linspace(0.20, 0.75, len(ordered)))
+    bars = ax.barh(ordered["model"], ordered["mae_30m_mw"], color=colors)
+    ax.set(
+        title=(
+            f"Headline result: {gain:.2f}% lower 30-minute MAE than AEMO P5MIN\n"
+            "Final held-out 2020 comparison"
+        ),
+        xlabel="MAE (MW)",
+        ylabel="",
+    )
+    ax.bar_label(bars, fmt="%.2f MW", padding=4)
+    ax.set_xlim(0, ordered["mae_30m_mw"].max() * 1.18)
+    fig.tight_layout()
+    fig.savefig(output_directory / "endpoint_30m_mae_2020.png", dpi=160)
+    plt.close(fig)
+
+
 def main() -> None:
-    build_probabilistic_notebook()
     out = ROOT / "outputs" / "10_final_2020_evaluation"
     out.mkdir(parents=True, exist_ok=True)
 
-    six = {model: load_six_horizon(model) for model in (*TCNS, AEMO)}
-    six_common = next(iter(six.values())).index
-    for frame in six.values():
-        six_common = six_common.intersection(frame.index)
-    six_common = six_common.sort_values()
-    six = {model: frame.loc[six_common].copy() for model, frame in six.items()}
+    champion, aemo = load_final_30m_comparison()
+    champion_native = len(champion)
+    aemo_native = len(aemo)
+    common = champion.index.intersection(aemo.index).sort_values()
+    champion = champion.loc[common].copy()
+    aemo = aemo.loc[common].copy()
+    actual = champion["actual_change_30m_mw"].to_numpy(float)
+    np.testing.assert_allclose(
+        actual,
+        aemo["actual_change_30m_mw"].to_numpy(float),
+        rtol=0,
+        atol=1e-4,
+    )
 
-    six_aggregate, six_horizons = [], []
-    for model, frame in six.items():
-        aggregate, horizons = six_horizon_metrics(model, frame)
-        six_aggregate.append(aggregate)
-        six_horizons.extend(horizons)
-    six_aggregate = pd.DataFrame(six_aggregate).sort_values(["mae_mw", "rmse_mw"]).reset_index(drop=True)
-    six_aggregate.insert(0, "rank_by_mae", np.arange(1, len(six_aggregate) + 1))
-    six_horizons = pd.DataFrame(six_horizons)
-    six_aggregate.to_csv(out / "six_horizon_model_comparison_2020.csv", index=False)
-    six_horizons.to_csv(out / "six_horizon_metrics_2020.csv", index=False)
-
-    original = load_original_references()
-    probabilistic = load_probabilistic_references()
-    endpoint_frames = {**six, **original, **probabilistic}
-    endpoint_common = next(iter(endpoint_frames.values())).index
-    native_counts = {model: len(frame) for model, frame in endpoint_frames.items()}
-    for frame in endpoint_frames.values():
-        endpoint_common = endpoint_common.intersection(frame.index)
-    endpoint_common = endpoint_common.sort_values()
-    endpoint_frames = {model: frame.loc[endpoint_common].copy() for model, frame in endpoint_frames.items()}
-
-    ridge = endpoint_frames["Ridge regression"]
-    gaussian = endpoint_frames["Gaussian linear"]
-    np.testing.assert_allclose(ridge["actual_change_30min"], gaussian["actual_change_30min"], rtol=0, atol=0)
-    np.testing.assert_allclose(ridge["predicted_change_30min"], gaussian["location_change_30min"], rtol=0, atol=0)
-
-    endpoint_rows = []
-    for model, frame in endpoint_frames.items():
-        kind = "six" if model in (*TCNS, AEMO) else "probabilistic" if model in PROBABILISTIC_REFERENCES else "original"
-        endpoint_rows.append(endpoint_row(model, frame, kind))
-    endpoint = pd.DataFrame(endpoint_rows).sort_values(["mae_30m_mw", "rmse_30m_mw"]).reset_index(drop=True)
-    endpoint.insert(0, "rank_by_mae", np.arange(1, len(endpoint) + 1))
-    endpoint.to_csv(out / "endpoint_30m_model_comparison_2020.csv", index=False)
-    endpoint.loc[endpoint["mean_nll_30m"].notna()].sort_values("mean_nll_30m").to_csv(out / "probabilistic_30m_comparison_2020.csv", index=False)
+    comparison = pd.DataFrame(
+        [
+            final_30m_row(FINAL_CHAMPION, champion, actual),
+            final_30m_row(AEMO, aemo, actual),
+        ]
+    ).sort_values(["mae_30m_mw", "rmse_30m_mw"]).reset_index(drop=True)
+    comparison.insert(0, "rank_by_mae", np.arange(1, len(comparison) + 1))
+    aemo_mae = comparison.loc[comparison["role"].eq("external benchmark"), "mae_30m_mw"].iloc[0]
+    comparison["mae_gain_vs_aemo_percent"] = (aemo_mae - comparison["mae_30m_mw"]) / aemo_mae * 100
+    comparison.loc[comparison["role"].eq("external benchmark"), "mae_gain_vs_aemo_percent"] = 0.0
+    comparison.to_csv(out / "endpoint_30m_model_comparison_2020.csv", index=False)
     pd.DataFrame(
-        [{"model": model, "native_2020_origins": count, "common_2020_origins": len(endpoint_common)} for model, count in native_counts.items()]
+        [
+            {"model": FINAL_LABELS[FINAL_CHAMPION], "native_2020_origins": champion_native, "common_2020_origins": len(common)},
+            {"model": FINAL_LABELS[AEMO], "native_2020_origins": aemo_native, "common_2020_origins": len(common)},
+        ]
     ).to_csv(out / "common_sample_counts_2020.csv", index=False)
+    render_final_30m_figure(comparison, out)
 
-    render_comparison_figures(six_horizons, endpoint, out)
+    for stale_name in (
+        "six_horizon_model_comparison_2020.csv",
+        "six_horizon_metrics_2020.csv",
+        "six_horizon_mae_2020.png",
+        "probabilistic_30m_comparison_2020.csv",
+        "reference_execution_status.csv",
+    ):
+        stale_path = out / stale_name
+        if stale_path.exists():
+            stale_path.unlink()
+
+    gain = comparison.loc[comparison["role"].eq("2019-selected champion"), "mae_gain_vs_aemo_percent"].iloc[0]
 
     cells = [
         nbf.v4.new_markdown_cell(
-            "# 10 — Final frozen-2020 evaluation\n\n"
-            f"The six-horizon table uses only the five TCN ensembles and AEMO on {len(six_common):,} common forecast origins. "
-            f"The separate 30-minute endpoint table uses all fourteen eligible models on {len(endpoint_common):,} common origins. "
-            "This separation prevents the original endpoint-only references from being misrepresented as six-horizon models."
+            f"# 10 — Final held-out 2020 evaluation\n\n"
+            f"## Headline result: {gain:.2f}% lower 30-minute MAE than AEMO P5MIN\n\n"
+            "The final comparison contains only the model selected from 2019 development evidence and the external AEMO P5MIN benchmark. "
+            f"Both are scored at the equivalent 30-minute horizon on {len(common):,} common 2020 forecast origins."
         ),
-        nbf.v4.new_markdown_cell("## Six-horizon comparison\n\n" + markdown_table(six_aggregate, ["rank_by_mae", "model", "forecast_origins", "mae_mw", "rmse_mw", "bias_mw"])),
-        nbf.v4.new_markdown_cell("## 30-minute endpoint comparison\n\n" + markdown_table(endpoint, ["rank_by_mae", "model", "forecast_origins", "mae_30m_mw", "rmse_30m_mw", "bias_30m_mw"])),
         nbf.v4.new_markdown_cell(
-            "## Probabilistic metrics\n\nNLL is comparable only among models with an explicit predictive density. CRPS is retained where the historical reference workflow recorded it. "
-            "Missing metrics are not ranked or treated as zero.\n\n"
-            + markdown_table(endpoint.loc[endpoint["mean_nll_30m"].notna()].sort_values("mean_nll_30m"), ["model", "mean_nll_30m", "mean_crps_30m_mw", "coverage_80", "coverage_95", "mean_width_95_mw", "mean_pit"])
+            "## Frozen evaluation protocol\n\n"
+            "`TCN_starNLL_noSD` was selected using 2019 validation only. Its seed 42, 142, and 242 members were then refitted on 2015–2019 for exactly 10 epochs, frozen, and combined as an equal-weight Student-t mixture before 2020 was scored. "
+            "No other development candidate is ranked on the final period. AEMO is retained only as the independently published operational benchmark."
+        ),
+        nbf.v4.new_markdown_cell(
+            "## Headline 30-minute comparison\n\n"
+            + markdown_table(
+                comparison,
+                ["rank_by_mae", "model", "role", "forecast_origins", "mae_30m_mw", "rmse_30m_mw", "bias_30m_mw", "mae_gain_vs_aemo_percent"],
+            )
+        ),
+        nbf.v4.new_markdown_cell(
+            f"The extension ensemble reduces 30-minute MAE from {aemo_mae:.3f} MW to "
+            f"{comparison.iloc[0]['mae_30m_mw']:.3f} MW: an absolute reduction of "
+            f"{aemo_mae - comparison.iloc[0]['mae_30m_mw']:.3f} MW and a relative gain of **{gain:.2f}%**. "
+            "The percentage is `(AEMO MAE - model MAE) / AEMO MAE × 100`, evaluated only on the common study-period origins."
         ),
         nbf.v4.new_code_cell(
             "from pathlib import Path\nimport pandas as pd\nfrom IPython.display import Image, display\n"
             "ROOT = next(p for p in (Path.cwd().resolve(), *Path.cwd().resolve().parents) if (p / 'outputs' / '10_final_2020_evaluation').is_dir())\n"
             "OUT = ROOT / 'outputs' / '10_final_2020_evaluation'\n"
-            "display(pd.read_csv(OUT / 'six_horizon_model_comparison_2020.csv').round(4))\n"
-            "display(Image(filename=str(OUT / 'six_horizon_mae_2020.png')))\n"
             "display(pd.read_csv(OUT / 'endpoint_30m_model_comparison_2020.csv').round(4))\n"
             "display(Image(filename=str(OUT / 'endpoint_30m_mae_2020.png')))"
         ),
     ]
     notebook = nbf.v4.new_notebook(cells=cells, metadata={"kernelspec": {"display_name": "qld-energy-rr", "language": "python", "name": "python3"}})
     nbf.write(notebook, ROOT / "notebooks" / "10_final_2020_evaluation.ipynb")
-    print(six_aggregate[["rank_by_mae", "model", "mae_mw", "rmse_mw"]].to_string(index=False))
-    print(endpoint[["rank_by_mae", "model", "mae_30m_mw", "rmse_30m_mw"]].to_string(index=False))
+    print(comparison.to_string(index=False))
 
 
 if __name__ == "__main__":

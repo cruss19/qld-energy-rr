@@ -19,17 +19,20 @@ The public study covers **2015–2020**. Development and model selection are
 restricted to **2015–2019**. Because 2020 had been encountered during the
 broader historical project, it is reported here as a **held-out chronological
 RR benchmark reconstructed under a frozen protocol**, not as a previously
-unseen test set. The public model lineage culminates in `TCN_starNLL`: a
-long-context TCN with horizon-specific bounded Student-t distribution heads.
+unseen test set. The original public model lineage culminates in
+`TCN_starNLL`; the final post-project extension, `TCN_starNLL_noSD`, adds
+causal terminal estimates for demand and direct radiation without estimate-SD
+channels.
 
 > **Evidence status:** historical maintainer verification found exact parity
 > for all 96 compared frozen-frame columns over 629,273 eligible origins; the
 > undistributed comparison cache is not available to a clean clone. The
 > sanitized [parity manifest](outputs/03_feature_contract/public_parity_manifest.json)
-> records that result. The three final `TCN_starNLL`
-> members, their equal-weight Student-t mixture ensemble, the fixed 2020
-> evaluation, the comparison notebook, and an opset-18 checked ONNX artifact
-> are complete. Later-year private-research results are not used here.
+> records that result. The final `TCN_starNLL_noSD` members at seeds 42, 142,
+> and 242, their equal-weight Student-t mixture ensemble, and the frozen 2020
+> comparison with AEMO are complete. The checked ONNX artifact documents the
+> original `TCN_starNLL` architecture. Later-year private-research results are
+> not used here.
 
 ## At a glance
 
@@ -84,29 +87,54 @@ interpretable.
 
 ## Results
 
-The six-horizon table uses the exact 105,400 forecast origins common to the five
-TCN ensembles and AEMO. The locked 2020 gate was not used for model selection.
+### Headline result — 22.44% lower 30-minute MAE than AEMO P5MIN
 
-| Rank | Model | MAE (MW) | RMSE (MW) | 30-minute MAE (MW) | NLL |
-|---:|---|---:|---:|---:|---:|
-| 1 | `TCN_starNLL` three-seed ensemble | **39.305** | **52.676** | **46.986** | 5.293 |
-| 2 | `TCN_star` three-seed ensemble | 39.339 | 52.738 | 47.481 | — |
-| 3 | `TCN3` three-seed ensemble | 43.821 | 58.149 | 54.356 | — |
-| 4 | `TCN2` three-seed ensemble | 44.294 | 58.762 | 55.051 | — |
-| 5 | `TCN1` three-seed ensemble | 44.371 | 58.758 | 55.196 | — |
-| 6 | AEMO P5MIN external benchmark | 49.740 | 65.794 | 61.056 | — |
+The final held-out comparison contains only the model selected from 2019
+development evidence and the published AEMO P5MIN external benchmark. Both are
+scored at the equivalent 30-minute horizon on the exact 105,400 forecast
+origins common to them in the 2020 study period.
 
-On matched origins, `TCN_starNLL` lowers pooled MAE by **10.434 MW
-(20.98%)** relative to the AEMO benchmark. Its 95% predictive interval covers
-94.55% of observations.
+| Rank | Model | Role | Forecast origins | 30-minute MAE (MW) | 30-minute RMSE (MW) | Bias (MW) | MAE gain vs AEMO |
+|---:|---|---|---:|---:|---:|---:|---:|
+| 1 | `TCN_starNLL_noSD` three-seed ensemble | 2019-selected champion | 105,400 | **47.355** | **64.308** | 2.672 | **22.44%** |
+| 2 | AEMO P5MIN external benchmark | Published external benchmark | 105,400 | 61.056 | 81.256 | -1.095 | Baseline |
 
-The original statistical and probabilistic linear references forecast the
-30-minute endpoint only. They are included in a separate 14-model endpoint
-table on the same 105,400-origin intersection. At 30 minutes, `TCN_starNLL`
-records 46.986 MW MAE; the strongest linear reference, Student-t linear,
-records 56.523 MW; the original Ridge records 56.721 MW; and AEMO records
-61.056 MW. Full horizon, endpoint, sample-count, and probabilistic results are
-in [`notebooks/10_final_2020_evaluation.ipynb`](notebooks/10_final_2020_evaluation.ipynb).
+The extension ensemble reduces 30-minute MAE by **13.701 MW** over the
+equivalent published AEMO P5MIN forecast. The percentage gain is calculated as
+`(AEMO MAE - model MAE) / AEMO MAE × 100` on the common study-period origins.
+`TCN_starNLL_noSD` was selected using 2019 validation only; its three members
+were then refitted on 2015–2019 for exactly 10 epochs and frozen before this
+2020 evaluation. Other development candidates are not ranked on the final
+period. The complete final protocol and retained comparison are in
+[`notebooks/10_final_2020_evaluation.ipynb`](notebooks/10_final_2020_evaluation.ipynb).
+
+### Post-project extension: 2019 validation
+
+The final no-SD causal-estimate extension
+(`TCN_starNLL_causal_feature_estimates_no_sd`, shortened here to
+`TCN_starNLL_noSD`) was trained on 2015–2018 and validated on 2019. Its final
+result is an equal-weight mixture of the seed 42, 142, and 242 Student-t
+members. Each member contributes its minimum-2019-validation-NLL checkpoint;
+ensemble weights were not fitted.
+
+These development results are reported separately from the frozen 2020 result
+above. They establish `TCN_starNLL_noSD` as the extension champion before any
+2020 scoring. The 2019 comparison is not perfectly symmetric: the no-SD
+candidate has a three-seed ensemble, while the SD-inclusive and
+direct-radiation comparators remain single-seed evidence.
+
+| Candidate rank by MAE | Model | Evidence scope | Validation NLL (standardized) | MAE (MW) | RMSE (MW) |
+|---:|---|---|---:|---:|---:|
+| 1 | `TCN_starNLL_noSD` | Three-seed Student-t ensemble | **0.718355** | **37.583** | **49.329** |
+| Supporting member | `TCN_starNLL_noSD`, seed 42 | Single minimum-NLL checkpoint | 0.734999 | 38.091 | 49.973 |
+| 2 | `TCN_starNLL_causal_feature_estimates`, seed 42 | Single minimum-NLL checkpoint | 0.736293 | 38.203 | 50.165 |
+| 3 | `TCN_starNLL_direct_radiation`, seed 42 | Single minimum-NLL checkpoint | 0.737551 | 38.287 | 50.301 |
+| External benchmark | AEMO P5MIN | Aligned 2019 point forecasts | — | 47.119 | 61.315 |
+
+The retained evidence, member epochs, and full interpretation boundary are in
+[`notebooks/11_extension_modelling.ipynb`](notebooks/11_extension_modelling.ipynb)
+and the corresponding
+[`2019 comparison table`](outputs/11_extension_modelling/model_comparison_2019_with_no_sd_ensemble.csv).
 
 ## Model evolution
 
@@ -122,6 +150,7 @@ last network:
 | `TCN1`–`TCN3` | Controlled architecture development | Value of causal convolutions, branch structure, and temporal depth |
 | `TCN_star` | Long-context deterministic model | Value of a 42-hour input history and repeated dilation cycle |
 | `TCN_starNLL` | Probabilistic extension | Dynamic location, scale, and tail thickness at all six horizons |
+| `TCN_starNLL_noSD` | Final causal-estimate extension | Terminal demand and direct-radiation estimates without estimate-SD channels |
 | Three-seed ensemble | Replication and variance reduction | Reduces sensitivity to a single random initialization |
 
 Each retained comparison must use an explicitly recorded feature contract,
@@ -446,10 +475,8 @@ privacy, and reproducibility review.
   intervention handling, revisions, aggregation, and metric definition.
 - Third-party data remain subject to provider terms and are not automatically
   redistributable because they are publicly accessible.
-- The original five statistical references and the three probabilistic linear
-  references forecast the 30-minute endpoint only. They are compared with the
-  TCN ensembles and AEMO at that endpoint, not represented as six-horizon
-  models.
+- The original statistical, probabilistic linear, and earlier TCN models are
+  development evidence. They are not ranked on the final 2020 period.
 
 ## Project status
 
@@ -461,10 +488,10 @@ privacy, and reproducibility review.
 | Public data contracts and source manifests | Complete for the published 2015–2020 workflow |
 | Curated source-code migration | Complete for the published model lineage |
 | Public feature contract | Current YAML expanded to 91 declared feature rows; historical exact parity verified for all 96 compared frozen-frame columns and recorded in a sanitized manifest |
-| 2020 reference reconstruction | Five original and three probabilistic 30-minute references complete; AEMO retained as a six-horizon external benchmark |
-| 2020 `TCN_starNLL` three-seed ensemble | Complete |
+| Development references | Original statistical, probabilistic linear, and earlier TCN evidence retained outside the final-test ranking |
+| 2020 `TCN_starNLL_noSD` three-seed ensemble | Complete; selected on 2019 and frozen before final evaluation |
 | ONNX model and architecture rendering | Complete; opset-18 full checker passed |
-| Final results and AEMO comparison | Separate six-horizon and 30-minute common-origin comparisons complete |
+| Final results and AEMO comparison | Champion-only 30-minute common-origin comparison complete |
 
 ## Author and contact
 

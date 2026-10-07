@@ -1,0 +1,76 @@
+experiment_id: rr_tcn_star_nll_no_sd_final_2020
+model_name: TCN_starNLL_causal_feature_estimates_no_sd
+public_label: TCN_starNLL_noSD
+variant_name: demand_direct_radiation_estimated_no_sd
+dataset: data/processed/rr_original_model_frame_5min_2015_2020.parquet
+helper_sources:
+  demand: data/processed/rr_demand_calendar_base_5min_2015_2020.parquet
+  direct_radiation: data/interim/regional_weather_hourly_validated_2015_2020.parquet
+
+split:
+  train_start: '2015-01-01'
+  train_end_exclusive: '2020-01-01'
+  evaluation_start: '2020-01-01'
+  evaluation_end_exclusive: '2021-01-01'
+
+seeds: [42, 142, 242]
+fixed_epochs: 10
+fixed_epoch_derivation: median of completed 2019 validation best epochs 10, 9, and 10
+execution_order: [42, 142, 242]
+
+causal_helpers:
+  constructed_upstream_before_tcn: true
+  standard_deviation_ddof: 1
+  standard_deviation_helpers_retained_upstream: true
+  standard_deviation_channels_in_model: false
+  demand:
+    columns_used_by_model: [demand_estimated]
+    terminal_value: demand_estimated[t]
+    ordinary_weekday_donors: same clock and weekday at t-7d, t-14d, t-21d
+    weekday_holiday_donor_replacement: nearest Sunday at the same clock time
+    weekend_donors: same clock and weekday in each of the previous three weeks
+    public_holiday_donors: same clock on each of the previous three Sundays
+    incomplete_donors: NA until all three donors exist
+    estimated_scaling: use totaldemand_mw training-fold mean and scale
+  direct_radiation:
+    regions: [brisbane, cairns_atherton, dalby_chinchilla, emerald_gladstone, townsville_burdekin]
+    columns_per_region_used_by_model: [direct_radiation_estimated]
+    terminal_value: direct_radiation_estimated[t]
+    donors: same clock observations at t-1d, t-2d, t-3d
+    historical_actual_alignment: last completed source hour
+    incomplete_donors: NA until all three donors exist
+    estimated_scaling: per-region min-max fitted on training fold and clipped to [0,1]
+
+architecture:
+  sequence_steps: 505
+  kernel_size: 5
+  dilations: [1, 2, 4, 8, 16, 32, 1, 2, 4, 8, 16, 32]
+  demand_channels: 7
+  system_channels: 16
+  climate_channels: 2
+  regions: 5
+  regional_channels_per_region: 11
+  dropout: 0.33
+  fusion_hidden_width: 128
+  horizons_minutes: [5, 10, 15, 20, 25, 30]
+  output_distribution: bounded_student_t
+  minimum_scale: 0.0001
+  minimum_df: 2.1
+  maximum_df: 20.0
+  initial_df: 4.0
+
+training:
+  optimizer: AdamW
+  learning_rate: 0.0005
+  weight_decay: 0.01
+  micro_batch_size: 128
+  gradient_accumulation_steps: 4
+  effective_batch_size: 512
+  gradient_clip_max_norm: 1.0
+  fixed_epochs: 10
+  early_stopping_enabled: false
+  checkpoint_selection: final fixed epoch frozen before 2020 scoring
+  precision: float32
+  amp_enabled: false
+
+output_directory_template: training_output/runs/TCN_starNLL_causal_feature_estimates_no_sd/final/train_2015_2019/seed_{seed}
