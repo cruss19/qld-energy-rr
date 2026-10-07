@@ -307,7 +307,7 @@ The exact reconstruction-tested Windows solution and artifact hashes are in
 ### Create and verify the environment
 
 ```powershell
-git clone <PUBLIC_REPOSITORY_URL>
+git clone https://github.com/cruss19/qld-energy-rr.git
 cd qld-energy-rr
 conda env create -f environment.yml
 conda activate qld-energy-rr
