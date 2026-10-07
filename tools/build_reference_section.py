@@ -313,8 +313,8 @@ def render_final_30m_figure(comparison: pd.DataFrame, output_directory: Path) ->
     bars = ax.barh(ordered["model"], ordered["mae_30m_mw"], color=colors)
     ax.set(
         title=(
-            f"Headline result: {gain:.2f}% lower 30-minute MAE than AEMO P5MIN\n"
-            "Final held-out 2020 comparison"
+            "Probabilistic six-horizon TCN\n"
+            f"{gain:.2f}% lower 30-minute MAE than AEMO P5MIN"
         ),
         xlabel="MAE (MW)",
         ylabel="",
@@ -379,7 +379,7 @@ def main() -> None:
     cells = [
         nbf.v4.new_markdown_cell(
             f"# 10 — Final held-out 2020 evaluation\n\n"
-            f"## Headline result: {gain:.2f}% lower 30-minute MAE than AEMO P5MIN\n\n"
+            f"## Headline result: probabilistic six-horizon forecasting with {gain:.2f}% lower 30-minute MAE than AEMO P5MIN\n\n"
             "The final comparison contains only the model selected from 2019 development evidence and the external AEMO P5MIN benchmark. "
             f"Both are scored at the equivalent 30-minute horizon on {len(common):,} common 2020 forecast origins."
         ),
@@ -387,6 +387,15 @@ def main() -> None:
             "## Frozen evaluation protocol\n\n"
             "`TCN_starNLL_noSD` was selected using 2019 validation only. Its seed 42, 142, and 242 members were then refitted on 2015–2019 for exactly 10 epochs, frozen, and combined as an equal-weight Student-t mixture before 2020 was scored. "
             "No other development candidate is ranked on the final period. AEMO is retained only as the independently published operational benchmark."
+        ),
+        nbf.v4.new_markdown_cell(
+            "## What the probabilistic head adds\n\n"
+            "At each of the 5, 10, 15, 20, 25, and 30-minute horizons, every ensemble member predicts a Student-t location, scale, and degrees of freedom. "
+            "The three member densities are combined as an equal-weight mixture, providing a full predictive distribution rather than only a point estimate. "
+            "That distribution supports prediction intervals, tail-risk measures, and probabilities of operational thresholds.\n\n"
+            "**Illustrative example.** If current demand is 7,000 MW and a 30-minute head has a change location of +120 MW, scale of 60 MW, and 5 degrees of freedom, the point forecast is 7,120 MW. "
+            "The same Student-t head assigns approximately 12% probability to demand exceeding 7,200 MW, because that event is `change > 200 MW`. "
+            "These values are explanatory only and are not a selected evaluation row."
         ),
         nbf.v4.new_markdown_cell(
             "## Headline 30-minute comparison\n\n"

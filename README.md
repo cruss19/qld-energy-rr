@@ -87,7 +87,7 @@ interpretable.
 
 ## Results
 
-### Headline result — 22.44% lower 30-minute MAE than AEMO P5MIN
+### Headline result — probabilistic six-horizon forecasting with 22.44% lower 30-minute MAE than AEMO P5MIN
 
 The final held-out comparison contains only the model selected from 2019
 development evidence and the published AEMO P5MIN external benchmark. Both are
@@ -99,7 +99,23 @@ origins common to them in the 2020 study period.
 | 1 | `TCN_starNLL_noSD` three-seed ensemble | 2019-selected champion | 105,400 | **47.355** | **64.308** | 2.672 | **22.44%** |
 | 2 | AEMO P5MIN external benchmark | Published external benchmark | 105,400 | 61.056 | 81.256 | -1.095 | Baseline |
 
-The extension ensemble reduces 30-minute MAE by **13.701 MW** over the
+The model produces more than a point forecast. At each of the 5, 10, 15, 20,
+25, and 30-minute horizons, every ensemble member predicts a Student-t
+location, scale, and degrees of freedom. The three member densities are
+combined as an equal-weight mixture. This provides a complete predictive
+distribution from which the system can derive central forecasts, prediction
+intervals, tail-risk measures, and probabilities of operational thresholds.
+
+For example, suppose current demand is 7,000 MW and an illustrative 30-minute
+head has a change location of +120 MW, scale of 60 MW, and 5 degrees of
+freedom. The point forecast is 7,120 MW, while the same head estimates the
+probability of demand exceeding 7,200 MW as
+`P(change > 200 MW)`, approximately **12%** under that Student-t distribution.
+The values in this example are illustrative; they are not a selected row from
+the evaluation data.
+
+For the directly comparable point-forecast benchmark, the extension ensemble
+reduces 30-minute MAE by **13.701 MW** over the
 equivalent published AEMO P5MIN forecast. The percentage gain is calculated as
 `(AEMO MAE - model MAE) / AEMO MAE × 100` on the common study-period origins.
 `TCN_starNLL_noSD` was selected using 2019 validation only; its three members
